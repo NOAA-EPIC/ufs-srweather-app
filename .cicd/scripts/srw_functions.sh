@@ -146,7 +146,7 @@ function SRW_e2e_status() # Get the status of E2E tests, and keep polling if the
             in_progress=false
         fi
     done
-    echo -e "#### $(date)\n#### ${SRW_COMPILER}-${NODE_NAME} ${JOB_NAME} -b ${GIT_BRANCH:-$(git symbolic-ref --short HEAD)}\n$result\n# completed=$completed failures=$failures missing=$missing" \
+    echo -e "#### $(date)\n#### ${SRW_COMPILER}-${NODE_NAME} ${JOB_NAME} -b ${REPO_BRANCH:-${GIT_BRANCH:-$(git symbolic-ref --short HEAD)}}\n$result\n# completed=$completed failures=$failures missing=$missing" \
         | tee ${report_file}
 }
 
@@ -159,7 +159,7 @@ function SRW_get_details() # Use rocotostat to generate detailed test results
     echo ""
     echo "#### started $startTime"
     echo "#### checked $(date)"
-    echo "#### ${SRW_COMPILER}-${NODE_NAME,,} ${JOB_NAME:-$(git config --get remote.origin.url 2>/dev/null)} -b ${GIT_BRANCH:-$(git symbolic-ref --short HEAD 2>/dev/null)}"
+    echo "#### ${SRW_COMPILER}-${NODE_NAME,,} ${JOB_NAME:-$(git config --get remote.origin.url 2>/dev/null)} -b ${REPO_BRANCH:-${GIT_BRANCH:-$(git symbolic-ref --short HEAD 2>/dev/null)}}"
     echo "#### rocotostat -w "FV3LAM_wflow.xml" -d "FV3LAM_wflow.db" -v 10 $opt"
     echo ""
     for dir in $(cat ${workspace}/regional_workflow/tests/WE2E/expts_file.txt 2>/dev/null) ; do

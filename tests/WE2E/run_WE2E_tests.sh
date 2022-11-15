@@ -100,6 +100,7 @@ Usage:
     [expt_basedir=\"...\"] \\
     [exec_subdir=\"...\"] \\
     [use_cron_to_relaunch=\"...\"] \\
+    [use_python_to_relaunch=\"...\"] \\
     [cron_relaunch_intvl_mnts=\"...\"] \\
     [debug=\"...\"] \\
     [verbose=\"...\"] \\
@@ -177,6 +178,14 @@ for all tests (by specifying use_cron_to_relaunch=\"FALSE\" on the command
 line).  Note that it is not possible to specify a different value for 
 USE_CRON_TO_RELAUNCH for each test via this argument; either all tests 
 use cron jobs or none do.
+
+use_python_to_relaunch:
+Optional argument used to implement the monitor_srw_tests.py script in the
+HOMEdir/ush directory. This script replaces the use of cron and is recommended
+when running more than approximately 10 E2E tests at a time. The script
+will be launched in a screen session, so it will continue even if the user
+logs out of the system being tested. The output will be in a file called
+${HOMEdir}/tests/WE2E/e2e_test.log. 
 
 cron_relaunch_intvl_mnts:
 Optional argument used to explicitly set the experiment variable 
@@ -346,6 +355,7 @@ valid_args=( \
   "expt_basedir" \
   "exec_subdir" \
   "use_cron_to_relaunch" \
+  "use_python_to_relaunch" \
   "cron_relaunch_intvl_mnts" \
   "debug" \
   "verbose" \
@@ -838,6 +848,7 @@ Please correct and rerun."
   EXPT_SUBDIR="${test_name}"
   EXEC_SUBDIR="${exec_subdir}"
   USE_CRON_TO_RELAUNCH=${use_cron_to_relaunch:-"TRUE"}
+  USE_PYTHON_TO_RELAUNCH=${use_cron_to_relaunch:-"FALSE"}
   CRON_RELAUNCH_INTVL_MNTS=${cron_relaunch_intvl_mnts:-"02"}
   DEBUG=${debug:-"FALSE"}
   VERBOSE=${verbose:-"TRUE"}
@@ -865,6 +876,10 @@ EXEC_SUBDIR=\"${EXEC_SUBDIR}\""
 EXPT_BASEDIR=\"${EXPT_BASEDIR}\""
   fi
 
+  if [ "$MACHINE" = "CHEYENNE" ]; then
+    USE_CRON_TO_RELAUNCH="FALSE"
+    USE_PYTHON_TO_RELAUNCH="TRUE"
+  fi
   expt_config_str=${expt_config_str}"
 EXPT_SUBDIR=\"${EXPT_SUBDIR}\"
 #
@@ -872,8 +887,10 @@ EXPT_SUBDIR=\"${EXPT_SUBDIR}\"
 # to the batch system via cron and, if so, the frequency (in minutes) of
 # resubmission.
 #
+
 USE_CRON_TO_RELAUNCH=\"${USE_CRON_TO_RELAUNCH}\"
 CRON_RELAUNCH_INTVL_MNTS=\"${CRON_RELAUNCH_INTVL_MNTS}\"
+
 #
 # Flags specifying whether to run in debug and verbose mode.
 #
@@ -1298,6 +1315,10 @@ Could not generate an experiment for the test specified by test_name:
   test_name = \"${test_name}\""
 
 done
+
+if [ "$USE_PYTHON_TO_RELAUNCH" = TRUE ]; then
+  screen -S e2etests -dm bash -c "$USHdir/monitor_srw_tests.py -e=$EXPT_BASEDIR |& tee ${HOMEdir}/tests/WE2E/e2e_test.log"
+fi
 #
 #-----------------------------------------------------------------------
 #

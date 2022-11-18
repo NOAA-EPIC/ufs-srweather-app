@@ -198,7 +198,7 @@ function SRW_save_tests() # Save SRW E2E tests to persistent storage, cluster_no
             launch-info.txt \
             test-results-*-*.txt test-details-*-*.txt \
             regional_workflow/tests/WE2E/expts_file.txt \
-	    --exclude=fix_am --exclude=fix_lam --exclude=_old_ expt_dirs
+	    --exclude=fix_am --exclude=fix_lam --exclude="*_old_*" expt_dirs
         if [[ 0 == $? ]] ; then
             ( cd ${SRW_SAVE_DIR}/${NODE_NAME} && rm -f latest && ln -s $day_of_week latest )
         fi

@@ -105,7 +105,7 @@ function SRW_check_progress() # [internal] used to report total progress of all 
 
 function SRW_e2e_status() # Get the status of E2E tests, and keep polling if they are't done yet ...
 {
-    local poll_frequency="${1:-60}"          # (seconds) ... polling frequency between results log scanning
+    local poll_frequency="${1:-120}"          # (seconds) ... polling frequency between results log scanning
     local num_log_lines="${2:-120}"
     local report_file="$3"
     local workspace=${WORKSPACE:-"."}
@@ -137,7 +137,14 @@ function SRW_e2e_status() # Get the status of E2E tests, and keep polling if the
         completed=$(echo "$result" | egrep -v '^#|IN PROGRESS|PENDING' | wc -l)
         remaining=$(echo "$result" | egrep    'IN PROGRESS|PENDING' | wc -l)
         missing=$(  echo "$result" | egrep    'Not Found'   | wc -l)
-        echo -e "$result\n completed=$completed failures=$failures remaining=$remaining missing=$missing"
+        echo -e "$result\n expts=$num_expts completed=$completed failures=$failures remaining=$remaining missing=$missing"
+        # if its just one test, show full status each poll ...
+        [[ 1 == $num_expts ]] && \
+        (
+        for dir in $(cat ${workspace}/regional_workflow/tests/WE2E/expts_file.txt 2>/dev/null) ; do
+            ( cd ${workspace}/expt_dirs/$dir; rocotostat -w "FV3LAM_wflow.xml" -d "FV3LAM_wflow.db" -v 10 ; )
+        done
+        )
         if [[ $result =~ 'IN PROGRESS' ]] || [[ $result =~ 'PENDING' ]] ; then
             in_progress=true
             echo "#### ... poll every $poll_frequency seconds to see if all test suites are complete ..."
@@ -146,7 +153,7 @@ function SRW_e2e_status() # Get the status of E2E tests, and keep polling if the
             in_progress=false
         fi
     done
-    echo -e "#### $(date)\n#### ${SRW_COMPILER}-${NODE_NAME} ${JOB_NAME} -b ${REPO_BRANCH:-${GIT_BRANCH:-$(git symbolic-ref --short HEAD)}}\n$result\n# completed=$completed failures=$failures missing=$missing" \
+    echo -e "#### $(date)\n#### ${SRW_COMPILER}-${NODE_NAME} ${JOB_NAME} -b ${REPO_BRANCH:-${GIT_BRANCH:-$(git symbolic-ref --short HEAD)}}\n$result\n# expts=$num_expts completed=$completed failures=$failures missing=$missing" \
         | tee ${report_file}
 }
 
@@ -186,11 +193,12 @@ function SRW_save_tests() # Save SRW E2E tests to persistent storage, cluster_no
         touch build_properties.txt workspace_properties.txt
         tar cvpf ${SRW_SAVE_DIR}/${NODE_NAME}/$day_of_week/expt_dirs.tar \
             build_properties.txt workspace_properties.txt \
-            builder.env builder.txt \
-            build-info.env build-info.txt \
-            launch-info.env launch-info.txt \
+            builder.txt \
+            build-info.txt \
+            launch-info.txt \
             test-results-*-*.txt test-details-*-*.txt \
-            regional_workflow/tests/WE2E/expts_file.txt expt_dirs
+            regional_workflow/tests/WE2E/expts_file.txt \
+	    --exclude=fix_lam expt_dirs
         if [[ 0 == $? ]] ; then
             ( cd ${SRW_SAVE_DIR}/${NODE_NAME} && rm -f latest && ln -s $day_of_week latest )
         fi

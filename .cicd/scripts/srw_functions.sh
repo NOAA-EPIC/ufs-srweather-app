@@ -63,7 +63,7 @@ function SRW_check_progress() # [internal] used to report total progress of all 
     local log_file=""
     local result=""
     local rc=0
-    local workspace=${WORKSPACE:-"."}
+    local workspace=${BUILD_JOB_DIR-${WORKSPACE:-"."}}
     export WE2E_dir=${workspace}/regional_workflow/tests/WE2E
     
     in_progress=false
@@ -108,7 +108,7 @@ function SRW_e2e_status() # Get the status of E2E tests, and keep polling if the
     local poll_frequency="${1:-120}"          # (seconds) ... polling frequency between results log scanning
     local num_log_lines="${2:-120}"
     local report_file="$3"
-    local workspace=${WORKSPACE:-"."}
+    local workspace=${BUILD_JOB_DIR-${WORKSPACE:-"."}}
     export WE2E_dir=${workspace}/regional_workflow/tests/WE2E
 
     echo "#### Do we have any tests ?"
@@ -162,7 +162,7 @@ function SRW_get_details() # Use rocotostat to generate detailed test results
     local startTime="$1"
     local opt="$2"
     local log_file=""
-    local workspace=${WORKSPACE:-"."}
+    local workspace=${BUILD_JOB_DIR-${WORKSPACE:-"."}}
     echo ""
     echo "#### started $startTime"
     echo "#### checked $(date)"
@@ -209,7 +209,7 @@ function SRW_plot_allvars() # Plot data from SRW E2E test, and prepare latest on
 {
     local dir="$1"
     local PDATA_PATH="$2"
-    local workspace=${WORKSPACE:-"."}
+    local workspace=${BUILD_JOB_DIR-${WORKSPACE:-"."}}
     (
     cd ${workspace}/regional_workflow/ush/Python
     source ${workspace}/expt_dirs/$dir/var_defns.sh >/dev/null

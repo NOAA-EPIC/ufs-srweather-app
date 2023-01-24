@@ -220,6 +220,7 @@ function SRW_e2e_status() # Get the status of E2E tests, and keep polling if the
     done
     echo -e "#### $(date)\n#### ${SRW_COMPILER}-${NODE_NAME} ${JOB_NAME} -b ${REPO_BRANCH:-${GIT_BRANCH:-$(git symbolic-ref --short HEAD)}}\n$result\n# expts=$num_expts completed=$completed failures=$failures missing=$missing" \
         | tee ${report_file}
+    return ${failures}
 }
 
 function SRW_get_details() # Use rocotostat to generate detailed test results

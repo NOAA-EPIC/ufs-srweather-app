@@ -95,8 +95,8 @@ function SRW_load_miniconda() # EPIC platforms should have miniconda3 available 
 function SRW_activate_env() # conda activate regional_workflow [ on an EPIC platform ] ...
 {
     local EPIC_PLATFORM=${1,,}
-    echo "#### activate_env(${EPIC_PLATFORM})"
-    [[ -n ${EPIC_PLATFORM} ]] && load_miniconda ${EPIC_PLATFORM}
+    echo "#### SRW_activate_env(${EPIC_PLATFORM})"
+    [[ -n ${EPIC_PLATFORM} ]] && SRW_load_miniconda ${EPIC_PLATFORM}
     conda activate regional_workflow
     which python && python --version
     conda info --envs

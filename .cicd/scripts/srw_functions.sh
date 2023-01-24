@@ -276,7 +276,8 @@ function SRW_plot_allvars() # Plot data from SRW E2E test, and prepare latest on
     local PDATA_PATH="$2"
     local workspace=${BUILD_JOB_DIR-${WORKSPACE:-"."}}
     (
-    cd ${workspace}/regional_workflow/ush/Python
+    echo "#### WARNING! this is deprecated from 'develop'"
+    cd ${workspace}/regional_workflow/ush/Python || cd ${workspace}/ush/Python || return 0
     source ${workspace}/expt_dirs/$dir/var_defns.sh >/dev/null
     echo "DATE_FIRST_CYCL=${DATE_FIRST_CYCL} CYCL_HRS=${CYCL_HRS} ALL_CDATES=${ALL_CDATES}"
     [[ -n ${ALL_CDATES} ]] || ALL_CDATES=$(echo ${DATE_FIRST_CYCL} | cut -c1-10)

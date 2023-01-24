@@ -129,7 +129,7 @@ function SRW_check_progress() # used to report total progress of all e2e tests
     local result=""
     local rc=0
     local workspace=${BUILD_JOB_DIR-${WORKSPACE:-"."}}
-    export WE2E_dir=${workspace}/regional_workflow/tests/WE2E
+    export WE2E_dir=${workspace}/tests/WE2E
     
     in_progress=false
     failures=0
@@ -174,7 +174,7 @@ function SRW_e2e_status() # Get the status of E2E tests, and keep polling if the
     local num_log_lines="${2:-120}"
     local report_file="$3"
     local workspace=${BUILD_JOB_DIR-${WORKSPACE:-"."}}
-    export WE2E_dir=${workspace}/regional_workflow/tests/WE2E
+    export WE2E_dir=${workspace}/tests/WE2E
 
     echo "#### Do we have any tests ?"
     num_expts=$(cat ${WE2E_dir}/expts_file.txt 2>/dev/null | wc -l)
@@ -206,7 +206,7 @@ function SRW_e2e_status() # Get the status of E2E tests, and keep polling if the
         # if its just one test, show full status each poll ...
         [[ 1 == $num_expts ]] && \
         (
-        for dir in $(cat ${workspace}/regional_workflow/tests/WE2E/expts_file.txt 2>/dev/null) ; do
+        for dir in $(cat ${workspace}/tests/WE2E/expts_file.txt 2>/dev/null) ; do
             ( cd ${workspace}/expt_dirs/$dir; rocotostat -w "FV3LAM_wflow.xml" -d "FV3LAM_wflow.db" -v 10 ; )
         done
         )
@@ -234,7 +234,7 @@ function SRW_get_details() # Use rocotostat to generate detailed test results
     echo "#### ${SRW_COMPILER}-${NODE_NAME,,} ${JOB_NAME:-$(git config --get remote.origin.url 2>/dev/null)} -b ${REPO_BRANCH:-${GIT_BRANCH:-$(git symbolic-ref --short HEAD 2>/dev/null)}}"
     echo "#### rocotostat -w "FV3LAM_wflow.xml" -d "FV3LAM_wflow.db" -v 10 $opt"
     echo ""
-    for dir in $(cat ${workspace}/regional_workflow/tests/WE2E/expts_file.txt 2>/dev/null) ; do
+    for dir in $(cat ${workspace}/tests/WE2E/expts_file.txt 2>/dev/null) ; do
         log_file=$(cd ${workspace}/expt_dirs/$dir/ 2>/dev/null && ls -1 log.launch_* 2>/dev/null)
         (
         echo "# rocotostat $dir/$log_file:"
@@ -262,7 +262,7 @@ function SRW_save_tests() # Save SRW E2E tests to persistent storage, cluster_no
             build-info.txt \
             launch-info.txt \
             test-results-*-*.txt test-details-*-*.txt \
-            regional_workflow/tests/WE2E/expts_file.txt \
+            tests/WE2E/expts_file.txt \
 	    --exclude=fix_am --exclude=fix_lam --exclude="*_old_*" expt_dirs
         if [[ 0 == $? ]] ; then
             ( cd ${SRW_SAVE_DIR}/${NODE_NAME} && rm -f latest && ln -s $day_of_week latest )
@@ -277,7 +277,7 @@ function SRW_plot_allvars() # Plot data from SRW E2E test, and prepare latest on
     local workspace=${BUILD_JOB_DIR-${WORKSPACE:-"."}}
     (
     echo "#### WARNING! this is deprecated from 'develop'"
-    cd ${workspace}/regional_workflow/ush/Python || cd ${workspace}/ush/Python || return 0
+    cd ${workspace}/ush/Python || return 0
     source ${workspace}/expt_dirs/$dir/var_defns.sh >/dev/null
     echo "DATE_FIRST_CYCL=${DATE_FIRST_CYCL} CYCL_HRS=${CYCL_HRS} ALL_CDATES=${ALL_CDATES}"
     [[ -n ${ALL_CDATES} ]] || ALL_CDATES=$(echo ${DATE_FIRST_CYCL} | cut -c1-10)

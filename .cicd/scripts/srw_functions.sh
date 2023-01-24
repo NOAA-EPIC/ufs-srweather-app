@@ -12,13 +12,34 @@ if [[ ${SRW_DEBUG} == true ]] ; then
     echo "script_file=$(pwd)/${BASH_SOURCE[0]}"
     #echo "script_dir=$script_dir"
     echo "export NODE_NAME=${NODE_NAME}"
+    echo "export SRW_PLATFORM=${SRW_PLATFORM}"
     echo "export SRW_COMPILER=${SRW_COMPILER}"
     grep "^function " ${BASH_SOURCE[0]}
 fi
 
+function SRW_git_clone() # clone a repo [ default: ufs-srweather-app -b develop ] ...
+{
+    local _REPO_URL=${1:-"https://github.com/ufs-community/ufs-srweather-app.git"}
+    local _BRANCH=${2:-"develop"}
+    git clone ${_REPO_URL} $(basename ${_REPO_URL} .git) -b ${_BRANCH}
+}
+
+function SRW_git_commit() # Used to adjust the repo COMMIT to start building from ...
+{
+    local _COMMIT=$1
+    [[ -n ${_COMMIT} ]] || return 0
+    # if we have the 'gh' command, use it to see if COMMIT is a PR# to pull ...
+    # otherwise, use 'git fetch' to see if COMMIT is a PR# to pull ...
+    which gh 2>/dev/null && gh pr checkout ${_COMMIT} || \
+    git fetch origin pull/${_COMMIT}/head:pr/${_COMMIT}
+    # if we succeeded pulling a PR#, switch to it ...
+    # otherwise, COMMIT must have been either a branch or tag or SHA1 hash ...
+    git checkout pr/${_COMMIT} 2>/dev/null || git checkout ${_COMMIT}
+}
+
 function SRW_list_repos() # show a table of latest commit IDs of all repos/sub-repos at PWD
 {
-    local comment="$1"
+    local comment="$1" # pass in a "brief message string ..."
     echo "$comment"
     for repo in $(find . -name .git -type d | sort) ; do
     (
@@ -35,6 +56,48 @@ function SRW_has_cron_entry() # Are there any srw-build-* experiment crons runni
 {
     local dir=$1
     crontab -l | grep "ufs-srweather-app/srw-build-${SRW_COMPILER:-"intel"}/expt_dirs/$dir"
+}
+
+function SRW_load_miniconda() # EPIC platforms should have miniconda3 available to load
+{
+    local EPIC_PLATFORM=${1,,}
+    if [[ -z $EPIC_PLATFORM ]] ; then
+        echo "# Need a platform: e,g, Orion | Hera | clusternoaa | ..."
+        return 1
+        
+    elif [[ $EPIC_PLATFORM == cheyenne ]] ; then
+        module use /glade/work/epicufsrt/contrib/miniconda3/modulefiles
+
+    elif [[ $EPIC_PLATFORM == orion ]] ;  then
+        module use -a /work/noaa/epic-ps/role-epic-ps/miniconda3/modulefiles # append
+
+    elif [[ $EPIC_PLATFORM == hera ]] ; then
+        module use /scratch1/NCEPDEV/nems/role.epic/miniconda3/modulefiles
+
+    elif [[ $EPIC_PLATFORM == jet ]] ; then
+        module use /mnt/lfs4/HFIP/hfv3gfs/role.epic/miniconda3/modulefiles
+
+    elif [[ $EPIC_PLATFORM == gaea ]] ;  then
+        module use /lustre/f2/dev/role.epic/contrib/modulefiles
+
+    elif [[ $EPIC_PLATFORM =~ clusternoaa ]] || [[ $EPIC_PLATFORM =~ noaacloud ]] ;  then
+        module use /contrib/EPIC/miniconda3/modulefiles
+
+    else
+        echo "#### Platform '${EPIC_PLATFORM}' not yet supported."
+        return 1
+    fi
+    module load miniconda3/4.12.0
+}
+
+function SRW_activate_env() # conda activate regional_workflow [ on an EPIC platform ] ...
+{
+    local EPIC_PLATFORM=${1,,}
+    echo "#### activate_env(${EPIC_PLATFORM})"
+    [[ -n ${EPIC_PLATFORM} ]] && load_miniconda ${EPIC_PLATFORM}
+    conda activate regional_workflow
+    which python && python --version
+    conda info --envs
 }
 
 function SRW_wflow_status() # [internal] used to determine state of an e2e test

@@ -12,6 +12,8 @@ if [[ ${SRW_DEBUG} == true ]] ; then
     echo "script_file=$(pwd)/${BASH_SOURCE[0]}"
     #echo "script_dir=$script_dir"
     echo "export NODE_NAME=${NODE_NAME}"
+    echo "export WORKSPACE=${WORKSPACE}"
+    echo "export BUILD_JOB_DIR=${BUILD_JOB_DIR}"
     echo "export SRW_PLATFORM=${SRW_PLATFORM}"
     echo "export SRW_COMPILER=${SRW_COMPILER}"
     grep "^function " ${BASH_SOURCE[0]}
@@ -100,7 +102,7 @@ function SRW_activate_env() # conda activate regional_workflow [ on an EPIC plat
     conda info --envs
 }
 
-function SRW_wflow_status() # [internal] used to determine state of an e2e test
+function SRW_wflow_status() # used to determine state of an e2e test
 {
     local log_data="$1"
     local result=""
@@ -120,7 +122,7 @@ function SRW_wflow_status() # [internal] used to determine state of an e2e test
     return $rc
 }
 
-function SRW_check_progress() # [internal] used to report total progress of all e2e tests
+function SRW_check_progress() # used to report total progress of all e2e tests
 {
     local status_file="$1"
     local log_file=""

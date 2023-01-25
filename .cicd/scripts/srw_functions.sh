@@ -223,6 +223,33 @@ function SRW_e2e_status() # Get the status of E2E tests, and keep polling if the
     return ${failures}
 }
 
+function SRW_get_expts_status() # Verify E2E experiment dirs are collecting data
+{
+    local status=0
+
+    local SRW_APP_DIR=$1
+    [[ -n ${SRW_APP_DIR} ]] || SRW_APP_DIR=${WORKSPACE:-"$(pwd)"}/ufs-srweather-app
+
+    echo "srw_e2e_status(): SRW_APP_DIR=${SRW_APP_DIR}"
+
+    if [[ 0 = $status ]]; then
+        echo "# Delay a bit to let the expt logs start accumulating ..." && sleep 180  # should wait at least cron-interval + 30secs
+        
+        # Check if tests are progressing
+        for dir in $(cat ${SRW_APP_DIR}/tests/WE2E/expts_file.txt 2>/dev/null) ; do
+            ( cd ${SRW_APP_DIR}/expt_dirs/$dir; rocotostat -w "FV3LAM_wflow.xml" -d "FV3LAM_wflow.db" -v 10 ; )
+        done
+
+        # Generate initial status file
+        cd ${SRW_APP_DIR}/tests/WE2E
+        ./get_expts_status.sh expts_basedir="${SRW_APP_DIR}/expt_dirs" verbose="TRUE" #num_log_lines="100"
+        status=$?      
+        cd ${SRW_APP_DIR}
+    fi
+    
+    return $status
+}
+
 function SRW_get_details() # Use rocotostat to generate detailed test results
 {
     local startTime="$1"

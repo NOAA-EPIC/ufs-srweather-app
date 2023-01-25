@@ -223,14 +223,54 @@ function SRW_e2e_status() # Get the status of E2E tests, and keep polling if the
     return ${failures}
 }
 
+function SRW_e2e_launch() # this will need to run within the ${WORKSPACE}/ufs-srweather-app/. directory (clone)
+{
+    local machine="$1"
+    local compiler="$2"
+    local account="$3"
+    local srw_tests="$4"
+    local expt_basedir="${5:-${SRW_APP_DIR}/expt_dirs}"
+    local exec_subdir="${6:-exec}"
+    local status=0
+    
+    [[ -n ${SRW_APP_DIR} ]] || local SRW_APP_DIR=${WORKSPACE:-"$(pwd)"}/ufs-srweather-app
+    
+    echo "SRW_e2e_launch(): SRW_APP_DIR=${SRW_APP_DIR}"
+    
+    cd ${SRW_APP_DIR}     || status=85
+    cd tests/WE2E         || status=86
+    cat -n expts_file.txt || status=87
+    pwd
+    
+    # Start the SRW E2E tests
+    if [[ 0 == $status ]] ; then
+       set -x
+       ./run_WE2E_tests.sh ${srw_tests} \
+            machine="${machine}" \
+            account="${account}" \
+            compiler="${compiler}" \
+            exec_subdir="${exec_subdir}" \
+            expt_basedir="${expt_basedir}" \
+            use_cron_to_relaunch="TRUE" \
+            cron_relaunch_intvl_mnts="2" \
+            verbose="FALSE" \
+            debug="FALSE"
+        status=$?
+        set +x
+    fi
+    cd ${SRW_APP_DIR}
+    
+    return $status
+}
+
 function SRW_get_expts_status() # Verify E2E experiment dirs are collecting data
 {
     local status=0
 
-    local SRW_APP_DIR=$1
+    local SRW_APP_DIR="$1"
     [[ -n ${SRW_APP_DIR} ]] || SRW_APP_DIR=${WORKSPACE:-"$(pwd)"}/ufs-srweather-app
 
-    echo "srw_e2e_status(): SRW_APP_DIR=${SRW_APP_DIR}"
+    echo "SRW_get_expts_status(): SRW_APP_DIR=${SRW_APP_DIR}"
 
     if [[ 0 = $status ]]; then
         echo "# Delay a bit to let the expt logs start accumulating ..." && sleep 180  # should wait at least cron-interval + 30secs

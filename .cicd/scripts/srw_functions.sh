@@ -13,7 +13,6 @@ if [[ ${SRW_DEBUG} == true ]] ; then
     #echo "script_dir=$script_dir"
     echo "export NODE_NAME=${NODE_NAME}"
     echo "export WORKSPACE=${WORKSPACE}"
-    echo "export BUILD_JOB_DIR=${BUILD_JOB_DIR}"
     echo "export SRW_APP_DIR=${SRW_APP_DIR}"
     echo "export SRW_PLATFORM=${SRW_PLATFORM}"
     echo "export SRW_COMPILER=${SRW_COMPILER}"

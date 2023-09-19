@@ -11,18 +11,7 @@ UFS Short-Range Weather App Users Guide
    :maxdepth: 3
    
 
-   Introduction
-   Quickstart
-   ContainerQuickstart
-   BuildRunSRW
-   Components
-   Include-HPCInstall
-   InputOutputFiles
-   LAMGrids
-   ConfigWorkflow
-   RocotoInfo
-   WE2Etests
-   Graphics
-   ContributorsGuide
-   FAQ
-   Glossary
+   BackgroundInfo/index
+   BuildingRunningTesting/index
+   CustomizingTheWorkflow/index
+   Reference/index

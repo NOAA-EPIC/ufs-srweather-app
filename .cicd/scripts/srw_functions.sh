@@ -39,6 +39,14 @@ function SRW_git_commit() # Used to adjust the repo COMMIT to start building fro
     git checkout pr/${_COMMIT} 2>/dev/null || git checkout ${_COMMIT}
 }
 
+function SRW_get_branch_name() {
+    local _BRANCH=$1
+    [[ -n $_BRANCH ]] || _BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)"
+    [[ HEAD = $_BRANCH ]] && _REF="$(git symbolic-ref --short HEAD 2>/dev/null)" && _BRANCH=$_REF # && echo "REF=$_REF" || echo "No matching REF for $_BRANCH"
+    [[ -n $_BRANCH ]] || _BRANCH=develop
+    echo "$_BRANCH"
+}
+
 function SRW_list_repos() # show a table of latest commit IDs of all repos/sub-repos at PWD
 {
     local comment="$1" # pass in a "brief message string ..."
@@ -184,7 +192,8 @@ function SRW_run_workflow_tests() {
         echo "Running Workflow E2E Test ${SRW_WE2E_SINGLE_TEST} on ${NODE_NAME}!"
 
         # Start a test ...
-        [[ ${SRW_PLATFORM} =~ hercules ]] && ACCOUNT="epic" || ACCOUNT=${SRW_PROJECT}
+	ACCOUNT=${SRW_PROJECT}
+        #[[ ${SRW_PLATFORM} =~ hercules ]] && ACCOUNT="epic"
         echo "E2E Testing SRW (${SRW_COMPILER}) on ${SRW_PLATFORM} using ACCOUNT=${ACCOUNT} (in ${workspace})"
         set -x
         SRW_WE2E_COMPREHENSIVE_TESTS=false WORKSPACE=${PWD} SRW_PROJECT=${ACCOUNT} .cicd/scripts/srw_test.sh

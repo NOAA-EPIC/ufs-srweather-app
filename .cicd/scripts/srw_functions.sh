@@ -111,47 +111,47 @@ function SRW_activate_workflow() {
 }
 
 function SRW_build() {
-        #### Initialize
-        echo hostname=$(hostname)
-        echo WORKSPACE=${WORKSPACE}
-        echo SRW_PROJECT=${SRW_PROJECT}
-        rc=0
-        (
-            cd ${SRW_APP_DIR}
-                      #### SRW Build ####
-                      export WORKSPACE=${PWD}
-                      local status=0
-                      if [[ -x install_${SRW_COMPILER}/exec/ufs_model ]] ; then
-                          echo "Skipping Rebuild of SRW"
-                      else
-                          #### Change to enable hercules as a supported platform ...
-                          grep ' hercules ' ./tests/build.sh || sed 's/ orion / orion hercules /1' -i ./tests/build.sh
-                          
-                          echo "Building SRW (${SRW_COMPILER}) on ${SRW_PLATFORM} (in ${WORKSPACE})"
-                          ./manage_externals/checkout_externals
-						  if [[ ${on_compute_node} == true ]] && [[ ${SRW_PLATFORM} != cheyenne ]] ; then
-                              # Get ready to build SRW on a compute node ...
-                              node_opts="-A ${SRW_PROJECT} -t 1:20:00"
-                              [[ ${SRW_PLATFORM} =~ jet    ]] && node_opts="-A ${SRW_PROJECT} -t 3:20:00"
-                              [[ ${SRW_PLATFORM} =~ orion    ]] && node_opts="-p ${SRW_PLATFORM}"
-                              [[ ${SRW_PLATFORM} =~ hercules ]] && node_opts="-p ${SRW_PLATFORM}"
-                              set -x
-                              srun -N 1 ${node_opts} -o build-%j.txt -e build-%j.txt .cicd/scripts/srw_build.sh
-                              status=$?
-                              set +x
-                          else
-                              set -x
-                              .cicd/scripts/srw_build.sh
-                              status=$?
-                              set +x
-                          fi
-                          echo "Build Successfully Completed on ${NODE_NAME}!"
-                      fi
-                      return $status;
-        )
-        rc=$?
-        echo "SRW_build() status=$rc"
-        return $rc
+    #### Initialize
+    echo hostname=$(hostname)
+    echo WORKSPACE=${WORKSPACE}
+    echo SRW_PROJECT=${SRW_PROJECT}
+    rc=0
+    (
+    cd ${SRW_APP_DIR}
+    #### SRW Build ####
+    export WORKSPACE=${PWD}
+    local status=0
+    if [[ -x install_${SRW_COMPILER}/exec/ufs_model ]] ; then
+        echo "Skipping Rebuild of SRW"
+    else
+        #### Change to enable hercules as a supported platform ...
+        grep ' hercules ' ./tests/build.sh || sed 's/ orion / orion hercules /1' -i ./tests/build.sh
+
+        echo "Building SRW (${SRW_COMPILER}) on ${SRW_PLATFORM} (in ${WORKSPACE})"
+        ./manage_externals/checkout_externals
+        if [[ false = ${on_compute_node} ]] || [[ ${SRW_PLATFORM} =~ cheyenne ]] ; then
+            set -x
+            .cicd/scripts/srw_build.sh
+            status=$?
+            set +x
+        else
+            # Get ready to build SRW on a compute node ...
+            node_opts="-A ${SRW_PROJECT} -t 1:20:00"
+            [[ ${SRW_PLATFORM} =~ jet      ]] && node_opts="-A ${SRW_PROJECT} -t 3:20:00"
+            [[ ${SRW_PLATFORM} =~ orion    ]] && node_opts="-p ${SRW_PLATFORM}"
+            [[ ${SRW_PLATFORM} =~ hercules ]] && node_opts="-p ${SRW_PLATFORM}"
+            set -x
+            srun -N 1 ${node_opts} -o build-%j.txt -e build-%j.txt .cicd/scripts/srw_build.sh
+            status=$?
+            set +x
+        fi
+        echo "Build Successfully Completed on ${NODE_NAME}!"
+    fi
+    return $status;
+    )
+    rc=$?
+    echo "SRW_build() status=$rc"
+    return $rc
 }
 
 function SRW_run_workflow_tests() {

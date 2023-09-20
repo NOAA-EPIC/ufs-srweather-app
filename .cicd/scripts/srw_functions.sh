@@ -30,8 +30,8 @@ function SRW_git_commit() # Used to adjust the repo COMMIT to start building fro
 {
     local _COMMIT=$1
     [[ -n ${_COMMIT} ]] || return 0
-    # if we have the 'gh' command, use it to see if COMMIT is a PR# to pull ...
-    # otherwise, use 'git fetch' to see if COMMIT is a PR# to pull ...
+    # if we have the "gh" command, use it to see if COMMIT is a PR# to pull ...
+    # otherwise, use "git fetch" to see if COMMIT is a PR# to pull ...
     which gh 2>/dev/null && gh pr checkout ${_COMMIT} || \
     git fetch origin pull/${_COMMIT}/head:pr/${_COMMIT}
     # if we succeeded pulling a PR#, switch to it ...
@@ -54,8 +54,8 @@ function SRW_list_repos() # show a table of latest commit IDs of all repos/sub-r
     for repo in $(find . -name .git -type d | sort) ; do
     (
         cd $(dirname $repo)
-        SUB_REPO_NAME=$(git config --get remote.origin.url | sed 's|https://github.com/||g' | sed 's|.git$||g')
-        SUB_REPO_STR=$(printf "%-40s%s\n" "$SUB_REPO_NAME~" "~" | tr ' ~' '  ')
+        SUB_REPO_NAME=$(git config --get remote.origin.url | sed "s|https://github.com/||g" | sed "s|.git$||g")
+        SUB_REPO_STR=$(printf "%-40s%s\n" "$SUB_REPO_NAME~" "~" | tr " ~" "  ")
         SUB_BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
         git log -1 --pretty=tformat:"# $SUB_REPO_STR %h:$SUB_BRANCH_NAME %d %s [%ad] <%an> " --abbrev=8 --date=short
     )
@@ -114,18 +114,21 @@ function SRW_build() {
     #### Initialize
     echo hostname=$(hostname)
     echo WORKSPACE=${WORKSPACE}
+    echo SRW_APP_DIR=${SRW_APP_DIR}
+    echo SRW_PLATFORM=${SRW_PLATFORM}
+    echo SRW_COMPILER=${SRW_COMPILER}
     echo SRW_PROJECT=${SRW_PROJECT}
     rc=0
     (
     cd ${SRW_APP_DIR}
     #### SRW Build ####
-    export WORKSPACE=${PWD}
+    local WORKSPACE=${PWD}
     local status=0
     if [[ -x install_${SRW_COMPILER}/exec/ufs_model ]] ; then
         echo "Skipping Rebuild of SRW"
     else
         #### Change to enable hercules as a supported platform ...
-        grep ' hercules ' ./tests/build.sh || sed 's/ orion / orion hercules /1' -i ./tests/build.sh
+        grep " hercules " ./tests/build.sh || sed "s/ orion / orion hercules /1" -i ./tests/build.sh
 
         echo "Building SRW (${SRW_COMPILER}) on ${SRW_PLATFORM} (in ${WORKSPACE})"
         ./manage_externals/checkout_externals
@@ -229,7 +232,7 @@ function SRW_load_miniconda() # EPIC platforms should have miniconda3 available 
         module use /contrib/EPIC/miniconda3/modulefiles
 
     else
-        echo "#### Platform '${EPIC_PLATFORM}' not yet supported."
+        echo "#### Platform ${EPIC_PLATFORM} not yet supported."
         return 1
     fi
     module load miniconda3/4.12.0
@@ -254,7 +257,7 @@ function SRW_wflow_status() # used to determine state of an e2e test
     result=$(echo "$log_data" | cut -d: -f1 | tail -1)
     if [[ 0 == $? ]]; then
         rc=1
-        echo "$result" | egrep -i 'IN PROGRESS|SUCCESS|FAILURE' > /dev/null || result=PENDING
+        echo "$result" | egrep -i "IN PROGRESS|SUCCESS|FAILURE" > /dev/null || result=PENDING
         [[ $result =~ PROGRESS ]] && rc=1
         [[ $result =~ SUCCESS ]] && rc=0
         [[ $result =~ FAILURE ]] && rc=0
@@ -278,13 +281,13 @@ function SRW_check_progress() # used to report total progress of all e2e tests
     failures=0
     missing=0
 
-    echo "# status_file=${status_file} [$([[ -f ${status_file} ]] && echo 'true' || echo 'false')]"
+    echo "# status_file=${status_file} [$([[ -f ${status_file} ]] && echo true || echo false)]"
     echo "#### checked $(date)" | tee ${WE2E_dir}/expts_status.txt
     
-    lines=$(egrep '^Checking workflow status of |^Workflow status: ' $status_file 2>/dev/null \
-    | sed -z 's| ...\nWorkflow|:Workflow|g' \
-    | sed 's|Checking workflow status of experiment ||g' \
-    | sed 's|Workflow status:  ||g' \
+    lines=$(egrep "^Checking workflow status of |^Workflow status: " $status_file 2>/dev/null \
+    | sed -z "s| ...\nWorkflow|:Workflow|g" \
+    | sed "s|Checking workflow status of experiment ||g" \
+    | sed "s|Workflow status:  ||g" \
     | tr -d '"' \
     | awk -F: '{print $2 ":" $1}' \
     | tee -a ${WE2E_dir}/expts_status.txt \
@@ -292,7 +295,7 @@ function SRW_check_progress() # used to report total progress of all e2e tests
     
     for dir in $(cat ${WE2E_dir}/expts_file.txt) ; do
         log_file=$(cd ${workspace}/expt_dirs/$dir/ 2>/dev/null && ls -1 log.launch_* 2>/dev/null)
-	    [[ -n "$log_file" ]] && log_size=$(wc -c ${workspace}/expt_dirs/$dir/$log_file 2>/dev/null | awk '{print $1}') || log_size="'$log_file'"
+	    [[ -n "$log_file" ]] && log_size=$(wc -c ${workspace}/expt_dirs/$dir/$log_file 2>/dev/null | awk "{print $1}") || log_size="'$log_file'"
         log_data="$(echo "$lines" | grep $dir)"
         result=$(SRW_wflow_status "$log_data")
         rc=$?
@@ -301,8 +304,8 @@ function SRW_check_progress() # used to report total progress of all e2e tests
         if [[ 0 == $rc ]]; then
             [[ $result =~ SUCCESS ]] || (( failures++ ))    # count FAILED test suites
         fi
-        [[ 9 == $rc ]] && (( missing++ ))    # if log file is 'Not Found', count as missing
-        #[[ 9 == $rc ]] && (( failures++ ))   # ... also count log file 'Not Found' as FAILED?
+        [[ 9 == $rc ]] && (( missing++ ))    # if log file is "Not Found", count as missing
+        #[[ 9 == $rc ]] && (( failures++ ))   # ... also count log file "Not Found" as FAILED?
     done
     
     [[ $in_progress == true ]] && return $failures                # Not all completed ...
@@ -311,7 +314,7 @@ function SRW_check_progress() # used to report total progress of all e2e tests
     return $failures
 }
 
-function SRW_e2e_status() # Get the status of E2E tests, and keep polling if they are't done yet ...
+function SRW_e2e_status() # Get the status of E2E tests, and keep polling if they are not done yet ...
 {
     local poll_frequency="${1:-120}"          # (seconds) ... polling frequency between results log scanning
     local num_log_lines="${2:-120}"
@@ -326,7 +329,7 @@ function SRW_e2e_status() # Get the status of E2E tests, and keep polling if the
     num_files=$(cd ${workspace}/expt_dirs 2>/dev/null && ls -1 */log.launch_* 2>/dev/null | wc -l)
     [[ 0 == $num_files ]] && echo "# No E2E test logs found." && return 14
 
-    echo "#### Let's poll if any E2E test suites FAILED, and report a total JOB_STATUS"
+    echo "#### Lets poll if any E2E test suites FAILED, and report a total JOB_STATUS"
     local rc=0
     local result="### []"
     local failures=0
@@ -342,9 +345,9 @@ function SRW_e2e_status() # Get the status of E2E tests, and keep polling if the
         mv ${status_file} ${workspace}/tmp/test-details.txt 2>/dev/null
         result=$(SRW_check_progress ${workspace}/tmp/test-details.txt)
         failures=$?
-        completed=$(echo "$result" | egrep -v '^#|IN PROGRESS|PENDING' | wc -l)
-        remaining=$(echo "$result" | egrep    'IN PROGRESS|PENDING' | wc -l)
-        missing=$(  echo "$result" | egrep    'Not Found'   | wc -l)
+        completed=$(echo "$result" | egrep -v "^#|IN PROGRESS|PENDING" | wc -l)
+        remaining=$(echo "$result" | egrep    "IN PROGRESS|PENDING" | wc -l)
+        missing=$(  echo "$result" | egrep    "Not Found"   | wc -l)
         echo -e "$result\n expts=$num_expts completed=$completed failures=$failures remaining=$remaining missing=$missing"
         # if its just one test, show full status each poll ...
         [[ 1 == $num_expts ]] && \
@@ -353,7 +356,7 @@ function SRW_e2e_status() # Get the status of E2E tests, and keep polling if the
             ( cd ${workspace}/expt_dirs/$dir; rocotostat -w "FV3LAM_wflow.xml" -d "FV3LAM_wflow.db" -v 10 ; )
         done
         )
-        if [[ $result =~ 'IN PROGRESS' ]] || [[ $result =~ 'PENDING' ]] ; then
+        if [[ $result =~ "IN PROGRESS" ]] || [[ $result =~ "PENDING" ]] ; then
             in_progress=true
             echo "#### ... poll every $poll_frequency seconds to see if all test suites are complete ..."
             sleep $poll_frequency
@@ -463,7 +466,7 @@ function SRW_save_tests() # Save SRW E2E tests to persistent storage, cluster_no
     [[ -n ${SRW_SAVE_DIR} ]] && [[ -d ${SRW_SAVE_DIR} ]] || return 1
     [[ -n ${NODE_NAME} ]] || return 2
     if [[ ${NODE_NAME} =~ cluster ]] && [[ -d ${SRW_SAVE_DIR} ]] ; then
-        day_of_week="$(date '+%u')"
+        day_of_week=$(date "+%u")
         mkdir -p ${SRW_SAVE_DIR}/${NODE_NAME}/$day_of_week || return 3
         echo "#### Saving SRW tests to ${SRW_SAVE_DIR}/${NODE_NAME}/$day_of_week/expt_dirs.tar"
         touch build_properties.txt workspace_properties.txt
@@ -487,7 +490,7 @@ function SRW_plot_allvars() # Plot data from SRW E2E test, and prepare latest on
     local PDATA_PATH="$2"
     local workspace=${SRW_APP_DIR:-${WORKSPACE:-"$(pwd)"}/ufs-srweather-app}
     (
-    echo "#### WARNING! this is deprecated from 'develop'"
+    echo "#### WARNING! this is deprecated from develop"
     cd ${workspace}/ush/Python || return 0
     source ${workspace}/expt_dirs/$dir/var_defns.sh >/dev/null
     echo "DATE_FIRST_CYCL=${DATE_FIRST_CYCL} CYCL_HRS=${CYCL_HRS} ALL_CDATES=${ALL_CDATES}"
@@ -495,7 +498,7 @@ function SRW_plot_allvars() # Plot data from SRW E2E test, and prepare latest on
     CDATE=${ALL_CDATES}
     echo "#### plot_allvars()  ${CDATE} ${EXTRN_MDL_LBCS_OFFSET_HRS} ${FCST_LEN_HRS} ${LBC_SPEC_INTVL_HRS} ${workspace}/expt_dirs/$dir ${PDATA_PATH}/NaturalEarth ${PREDEF_GRID_NAME}"
         python plot_allvars.py ${CDATE} ${EXTRN_MDL_LBCS_OFFSET_HRS} ${FCST_LEN_HRS} ${LBC_SPEC_INTVL_HRS} ${workspace}/expt_dirs/$dir ${PDATA_PATH}/NaturalEarth ${PREDEF_GRID_NAME}
-        last=$(ls -rt1 ${workspace}/expt_dirs/$dir/${CDATE}/postprd/*.png | tail -1 | awk -F_ '{print $NF}')
+        last=$(ls -rt1 ${workspace}/expt_dirs/$dir/${CDATE}/postprd/*.png | tail -1 | awk -F_ "{print $NF}")
         [[ -n ${last} ]] || return 1
         echo "# Saving plots from postprd/*${last} -> expt_plots/$dir/${CDATE}"
         ( cd ${workspace}/ && ls -rt1 -l expt_dirs/$dir/${CDATE}/postprd/*${last} ; )

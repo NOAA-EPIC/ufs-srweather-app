@@ -69,9 +69,9 @@ function SRW_has_cron_entry() # Are there any srw-build-* experiment crons runni
 }
 
 function SRW_clean() {
-    if [[ ${clean} == true ]] && [[ -d ${SRW_APP_DIR}/.git ]] ; then
+    if [[ ${clean} == true ]] && [[ -d ${SRW_APP_DIR:-"."}/.git ]] ; then
     (
-        cd ${SRW_APP_DIR}
+        cd ${SRW_APP_DIR:-"."}
         set -x
         pwd
         [[ -f ./devclean.sh ]] || return 1
@@ -120,16 +120,13 @@ function SRW_build() {
     echo SRW_PROJECT=${SRW_PROJECT}
     rc=0
     (
-    cd ${SRW_APP_DIR}
+    cd ${SRW_APP_DIR:-"."}
     #### SRW Build ####
     local WORKSPACE=${PWD}
     local status=0
     if [[ -x install_${SRW_COMPILER}/exec/ufs_model ]] ; then
         echo "Skipping Rebuild of SRW"
     else
-        #### Change to enable hercules as a supported platform ...
-        grep " hercules " ./tests/build.sh || sed "s/ orion / orion hercules /1" -i ./tests/build.sh
-
         echo "Building SRW (${SRW_COMPILER}) on ${SRW_PLATFORM} (in ${WORKSPACE})"
         ./manage_externals/checkout_externals
         if [[ false = ${on_compute_node} ]] || [[ ${SRW_PLATFORM} =~ cheyenne ]] ; then
@@ -158,7 +155,7 @@ function SRW_build() {
 }
 
 function SRW_run_workflow_tests() {
-    cd ${SRW_APP_DIR}
+    cd ${SRW_APP_DIR:-"."}
     echo "PWD=${PWD}"
     echo "LMOD_VERSION=$LMOD_VERSION"
     
@@ -174,13 +171,13 @@ function SRW_run_workflow_tests() {
     else
         # This sets the Graphic Plot generation ...
         if [[ ${SRW_WE2E_SINGLE_TEST} == "plot" ]] ; then
-		      SRW_WE2E_SINGLE_TEST=grid_RRFS_CONUS_13km_ics_FV3GFS_lbcs_FV3GFS_suite_GFS_v16_plot
-		      [[ "${SRW_PLATFORM}" =~ orion    ]] && SRW_WE2E_SINGLE_TEST=grid_RRFS_AK_13km_ics_FV3GFS_lbcs_FV3GFS_suite_GFS_v16_plot
-		      [[ "${SRW_PLATFORM}" =~ hercules ]] && SRW_WE2E_SINGLE_TEST=grid_RRFS_AK_13km_ics_FV3GFS_lbcs_FV3GFS_suite_GFS_v16_plot
-		      [[ "${SRW_PLATFORM}" =~ gaea     ]] && SRW_WE2E_SINGLE_TEST=grid_SUBCONUS_Ind_3km_ics_RAP_lbcs_RAP_suite_RRFS_v1beta_plot
-              [[ "${SRW_PLATFORM}" =~ cheyenne ]] && [[ "${SRW_COMPILER}" == gnu ]] && SRW_WE2E_SINGLE_TEST=grid_RRFS_CONUS_25km_ics_FV3GFS_lbcs_FV3GFS_suite_GFS_v17_p8_plot
-              cp tests/WE2E/test_configs/grids_extrn_mdls_suites_community/config.$SRW_WE2E_SINGLE_TEST.yaml \
-                 tests/WE2E/test_configs/grids_extrn_mdls_suites_community/config.plot.yaml
+	    SRW_WE2E_SINGLE_TEST=grid_RRFS_CONUS_13km_ics_FV3GFS_lbcs_FV3GFS_suite_GFS_v16_plot
+	    [[ "${SRW_PLATFORM}" =~ orion    ]] && SRW_WE2E_SINGLE_TEST=grid_RRFS_AK_13km_ics_FV3GFS_lbcs_FV3GFS_suite_GFS_v16_plot
+	    [[ "${SRW_PLATFORM}" =~ hercules ]] && SRW_WE2E_SINGLE_TEST=grid_RRFS_AK_13km_ics_FV3GFS_lbcs_FV3GFS_suite_GFS_v16_plot
+	    [[ "${SRW_PLATFORM}" =~ gaea     ]] && SRW_WE2E_SINGLE_TEST=grid_SUBCONUS_Ind_3km_ics_RAP_lbcs_RAP_suite_RRFS_v1beta_plot
+            [[ "${SRW_PLATFORM}" =~ cheyenne ]] && [[ "${SRW_COMPILER}" == gnu ]] && SRW_WE2E_SINGLE_TEST=grid_RRFS_CONUS_25km_ics_FV3GFS_lbcs_FV3GFS_suite_GFS_v17_p8_plot
+            cp tests/WE2E/test_configs/grids_extrn_mdls_suites_community/config.$SRW_WE2E_SINGLE_TEST.yaml \
+	        tests/WE2E/test_configs/grids_extrn_mdls_suites_community/config.plot.yaml
         fi
         
         set -x
@@ -195,8 +192,7 @@ function SRW_run_workflow_tests() {
         echo "Running Workflow E2E Test ${SRW_WE2E_SINGLE_TEST} on ${NODE_NAME}!"
 
         # Start a test ...
-	ACCOUNT=${SRW_PROJECT}
-        #[[ ${SRW_PLATFORM} =~ hercules ]] && ACCOUNT="epic"
+	[[ -n ${ACCOUNT} ]] || ACCOUNT=${SRW_PROJECT}
         echo "E2E Testing SRW (${SRW_COMPILER}) on ${SRW_PLATFORM} using ACCOUNT=${ACCOUNT} (in ${workspace})"
         set -x
         SRW_WE2E_COMPREHENSIVE_TESTS=false WORKSPACE=${PWD} SRW_PROJECT=${ACCOUNT} .cicd/scripts/srw_test.sh

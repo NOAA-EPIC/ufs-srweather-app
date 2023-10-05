@@ -197,8 +197,7 @@ function SRW_run_workflow_tests() {
         echo "E2E Testing SRW (${SRW_COMPILER}) on ${SRW_PLATFORM} using ACCOUNT=${ACCOUNT} (in ${workspace})"
         set -x
 	umask
- 	[[ "${SRW_PLATFORM}" =~ noaacloud ]] && super=sudo && umask 002 || super=""
-        ${super} SRW_WE2E_COMPREHENSIVE_TESTS=false WORKSPACE=${PWD} SRW_PROJECT=${ACCOUNT} .cicd/scripts/srw_test.sh
+ 	SRW_WE2E_COMPREHENSIVE_TESTS=false WORKSPACE=${PWD} SRW_PROJECT=${ACCOUNT} .cicd/scripts/srw_test.sh
         set +x
         echo "Completed Workflow Tests on ${NODE_NAME}!"
     fi

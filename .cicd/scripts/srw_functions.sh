@@ -118,6 +118,7 @@ function SRW_build() {
     echo SRW_PLATFORM=${SRW_PLATFORM}
     echo SRW_COMPILER=${SRW_COMPILER}
     echo SRW_PROJECT=${SRW_PROJECT}
+    echo on_compute_node=${on_compute_node}
     rc=0
     (
     cd ${SRW_APP_DIR:-"."}
@@ -129,7 +130,7 @@ function SRW_build() {
     else
         echo "Building SRW (${SRW_COMPILER}) on ${SRW_PLATFORM} (in ${WORKSPACE})"
         ./manage_externals/checkout_externals
-        if [[ false = ${on_compute_node} ]] || [[ ${SRW_PLATFORM} =~ cheyenne ]] ; then
+        if [[ true != ${on_compute_node} ]] || [[ ${SRW_PLATFORM} =~ cheyenne ]] ; then
             set -x
             .cicd/scripts/srw_build.sh
             status=$?

@@ -182,6 +182,8 @@ function SRW_run_workflow_tests() {
         fi
         
         set -x
+	umask 002   # enabling group-write permission on new files/dirs might help on AWS
+ 
         #### Changes to allow for a single E2E test ####
         #sed -z 's/#\nset /#\n[[ -n "${SRW_WE2E_SINGLE_TEST}" ]] || export SRW_WE2E_SINGLE_TEST=""\nset /1' -i .cicd/scripts/srw_test.sh
         #sed -z 's/"coverage"\nfi\n\n/"coverage"\nfi\n[[ -n "${SRW_WE2E_SINGLE_TEST}" ]] && test_type="${SRW_WE2E_SINGLE_TEST}"\n\n/1' -i .cicd/scripts/srw_test.sh

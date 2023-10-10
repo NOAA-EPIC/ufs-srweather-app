@@ -132,8 +132,10 @@ function SRW_build() {
         ./manage_externals/checkout_externals
         if [[ true != ${on_compute_node} ]] || [[ ${SRW_PLATFORM} =~ cheyenne ]] ; then
             set -x
-            .cicd/scripts/srw_build.sh
-            status=$?
+	    cd tests
+	    ./build.sh ${SRW_PLATFORM} ${SRW_COMPILER}
+	    status=$?
+	    cd -
             set +x
         else
             # Get ready to build SRW on a compute node ...
@@ -142,8 +144,10 @@ function SRW_build() {
             [[ ${SRW_PLATFORM} =~ orion    ]] && node_opts="-p ${SRW_PLATFORM}"
             [[ ${SRW_PLATFORM} =~ hercules ]] && node_opts="-p ${SRW_PLATFORM}"
             set -x
-            srun -N 1 ${node_opts} -o build-%j.txt -e build-%j.txt .cicd/scripts/srw_build.sh
+	    cd tests
+            srun -N 1 ${node_opts} -o build-%j.txt -e build-%j.txt ./build.sh ${SRW_PLATFORM} ${SRW_COMPILER}
             status=$?
+	    cd -
             set +x
         fi
         echo "Build Successfully Completed on ${NODE_NAME}!"
@@ -156,6 +160,7 @@ function SRW_build() {
 }
 
 function SRW_run_workflow_tests() {
+    rc=0
     cd ${SRW_APP_DIR:-"."}
     echo "PWD=${PWD}"
     echo "LMOD_VERSION=$LMOD_VERSION"
@@ -188,7 +193,7 @@ function SRW_run_workflow_tests() {
         #sed -z 's/#\nset /#\n[[ -n "${SRW_WE2E_SINGLE_TEST}" ]] || export SRW_WE2E_SINGLE_TEST=""\nset /1' -i .cicd/scripts/srw_test.sh
         #sed -z 's/"coverage"\nfi\n\n/"coverage"\nfi\n[[ -n "${SRW_WE2E_SINGLE_TEST}" ]] && test_type="${SRW_WE2E_SINGLE_TEST}"\n\n/1' -i .cicd/scripts/srw_test.sh
         #sed -z 's/"fundamental"\nfi\n\n/"fundamental"\nfi\n[[ -n "${SRW_WE2E_SINGLE_TEST}" ]] && test_type="${SRW_WE2E_SINGLE_TEST}"\n\n/1' -i .cicd/scripts/srw_test.sh
-        sed -z 's/test_type="coverage"/test_type="single"/1' -i .cicd/scripts/srw_test.sh
+        #sed -z 's/test_type="coverage"/test_type="single"/1' -i .cicd/scripts/srw_test.sh
         echo "${SRW_WE2E_SINGLE_TEST}" > tests/WE2E/single
         set +x
 
@@ -199,10 +204,27 @@ function SRW_run_workflow_tests() {
         echo "E2E Testing SRW (${SRW_COMPILER}) on ${SRW_PLATFORM} using ACCOUNT=${ACCOUNT} (in ${workspace})"
         set -x
 	umask
- 	SRW_WE2E_COMPREHENSIVE_TESTS=false WORKSPACE=${PWD} SRW_PROJECT=${ACCOUNT} .cicd/scripts/srw_test.sh
-        set +x
-        echo "Completed Workflow Tests on ${NODE_NAME}!"
+
+  	# Test directories
+	we2e_experiment_base_dir="${PWD}/expt_dirs"
+	we2e_test_dir="${PWD}/tests/WE2E"
+	nco_dir="${PWD}/nco_dirs"
+
+	# Run the end-to-end tests.
+	    test_type="single"
+
+	cd ${we2e_test_dir}
+	# Progress file
+	progress_file="${PWD}/we2e_test_results-${SRW_PLATFORM}-${SRW_COMPILER}.txt"
+	./setup_WE2E_tests.sh ${SRW_PLATFORM} ${SRW_PROJECT} ${SRW_COMPILER} ${test_type} \
+	    --expt_basedir=${we2e_experiment_base_dir} \
+	    --opsroot=${nco_dir} | tee ${progress_file}
+	rc=$?
+ 	cd -
+        echo "Completed Workflow Tests on ${NODE_NAME}! rc=$rc"
     fi
+    set +x
+    return $rc
 }
 
 #### Below are legacy functions for public-v2.1.0

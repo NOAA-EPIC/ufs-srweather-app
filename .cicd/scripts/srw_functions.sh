@@ -184,10 +184,8 @@ function SRW_run_workflow_tests() {
             [[ "${SRW_PLATFORM}" =~ cheyenne ]] && [[ "${SRW_COMPILER}" == gnu ]] && SRW_WE2E_SINGLE_TEST=grid_RRFS_CONUS_25km_ics_FV3GFS_lbcs_FV3GFS_suite_GFS_v17_p8_plot
             cp tests/WE2E/test_configs/grids_extrn_mdls_suites_community/config.$SRW_WE2E_SINGLE_TEST.yaml \
 	        tests/WE2E/test_configs/grids_extrn_mdls_suites_community/config.plot.yaml
-        fi
         
         set -x
-	umask 002   # enabling group-write permission on new files/dirs might help on AWS
  
         #### Changes to allow for a single E2E test ####
         #sed -z 's/#\nset /#\n[[ -n "${SRW_WE2E_SINGLE_TEST}" ]] || export SRW_WE2E_SINGLE_TEST=""\nset /1' -i .cicd/scripts/srw_test.sh
@@ -195,7 +193,10 @@ function SRW_run_workflow_tests() {
         #sed -z 's/"fundamental"\nfi\n\n/"fundamental"\nfi\n[[ -n "${SRW_WE2E_SINGLE_TEST}" ]] && test_type="${SRW_WE2E_SINGLE_TEST}"\n\n/1' -i .cicd/scripts/srw_test.sh
         #sed -z 's/test_type="coverage"/test_type="single"/1' -i .cicd/scripts/srw_test.sh
         echo "${SRW_WE2E_SINGLE_TEST}" > tests/WE2E/single
+	    test_type="single"
+     
         set +x
+        fi
 
         echo "Running Workflow E2E Test ${SRW_WE2E_SINGLE_TEST} on ${NODE_NAME}!"
 
@@ -203,6 +204,7 @@ function SRW_run_workflow_tests() {
 	[[ -n ${ACCOUNT} ]] || ACCOUNT=${SRW_PROJECT}
         echo "E2E Testing SRW (${SRW_COMPILER}) on ${SRW_PLATFORM} using ACCOUNT=${ACCOUNT} (in ${workspace})"
         set -x
+	umask 002   # enabling group-write permission on new files/dirs might help on AWS
 	umask
 
   	# Test directories
@@ -210,12 +212,11 @@ function SRW_run_workflow_tests() {
 	we2e_test_dir="${PWD}/tests/WE2E"
 	nco_dir="${PWD}/nco_dirs"
 
-	# Run the end-to-end tests.
-	    test_type="single"
-
 	cd ${we2e_test_dir}
 	# Progress file
 	progress_file="${PWD}/we2e_test_results-${SRW_PLATFORM}-${SRW_COMPILER}.txt"
+ 
+	# Run the end-to-end tests.
 	./setup_WE2E_tests.sh ${SRW_PLATFORM} ${SRW_PROJECT} ${SRW_COMPILER} ${test_type} \
 	    --expt_basedir=${we2e_experiment_base_dir} \
 	    --opsroot=${nco_dir} | tee ${progress_file}

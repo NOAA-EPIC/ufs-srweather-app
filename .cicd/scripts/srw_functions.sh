@@ -184,19 +184,17 @@ function SRW_run_workflow_tests() {
             [[ "${SRW_PLATFORM}" =~ cheyenne ]] && [[ "${SRW_COMPILER}" == gnu ]] && SRW_WE2E_SINGLE_TEST=grid_RRFS_CONUS_25km_ics_FV3GFS_lbcs_FV3GFS_suite_GFS_v17_p8_plot
             cp tests/WE2E/test_configs/grids_extrn_mdls_suites_community/config.$SRW_WE2E_SINGLE_TEST.yaml \
 	        tests/WE2E/test_configs/grids_extrn_mdls_suites_community/config.plot.yaml
-        
+         fi
+
         set -x
- 
-        #### Changes to allow for a single E2E test ####
-        #sed -z 's/#\nset /#\n[[ -n "${SRW_WE2E_SINGLE_TEST}" ]] || export SRW_WE2E_SINGLE_TEST=""\nset /1' -i .cicd/scripts/srw_test.sh
-        #sed -z 's/"coverage"\nfi\n\n/"coverage"\nfi\n[[ -n "${SRW_WE2E_SINGLE_TEST}" ]] && test_type="${SRW_WE2E_SINGLE_TEST}"\n\n/1' -i .cicd/scripts/srw_test.sh
-        #sed -z 's/"fundamental"\nfi\n\n/"fundamental"\nfi\n[[ -n "${SRW_WE2E_SINGLE_TEST}" ]] && test_type="${SRW_WE2E_SINGLE_TEST}"\n\n/1' -i .cicd/scripts/srw_test.sh
-        #sed -z 's/test_type="coverage"/test_type="single"/1' -i .cicd/scripts/srw_test.sh
-        echo "${SRW_WE2E_SINGLE_TEST}" > tests/WE2E/single
-	    test_type="single"
-     
+        if [[ ${SRW_WE2E_SINGLE_TEST} == "coverage" ]] || [[ ${SRW_WE2E_SINGLE_TEST} == "comprehensive" ]] ; then
+	    test_type=${SRW_WE2E_SINGLE_TEST}
+	else 
+            #### Changes to allow for a single E2E test ####
+            test_type="single"
+	    echo "${SRW_WE2E_SINGLE_TEST}" > tests/WE2E/single
+	fi
         set +x
-        fi
 
         echo "Running Workflow E2E Test ${SRW_WE2E_SINGLE_TEST} on ${NODE_NAME}!"
 

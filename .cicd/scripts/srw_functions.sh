@@ -122,6 +122,8 @@ function SRW_build() {
     rc=0
     (
     cd ${SRW_APP_DIR:-"."}
+    pwd
+    git log -1 --pretty=oneline
     #### SRW Build ####
     local WORKSPACE=${PWD}
     local status=0

@@ -298,7 +298,7 @@ function SRW_skill_score() {
     SRW_activate_workflow false
     #source etc/lmod-setup.sh ${platform,,}
     #module use ${PWD}/modulefiles
-    #module load build_${platform,,}_${compiler}
+    module load build_${platform,,}_${compiler}
     #module load wflow_${platform,,}
 
     # load met and metplus

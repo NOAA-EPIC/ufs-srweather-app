@@ -231,4 +231,97 @@ function SRW_run_workflow_tests() {
     return $rc
 }
 
+function SRW_get_metprd() {
+    # To analyze the WE2E test against known result statistics, we use Metprd data from a known run.
+    # This copies (when available) the Metprd data from the platform's local filesystem,
+    # ... otherwise it reports how to wget/ftp the remote tarball needed, which is very large.
+    
+    [[ -n ${workspace} ]] || workspace=${PWD}
+    [[ -n ${platform} ]] || platform=${SRW_PLATFORM,,}
+    [[ -n ${compiler} ]] || compiler=${SRW_COMPILER,,}
+    
+    echo "Skill Score data for SRW (${compiler}) on ${platform} (using ${workspace})"
+        
+    # clear out the old test data
+    rm -rf ${workspace}/Indy-Severe-Weather*
+        
+    # Let's try to copy from locally staged data sets ... otherwise the script will use an externally fetched Indy-Severe-Weather.tgz
+    echo "### machine=${platform,,}"
+    TEST_EXTRN_MDL_SOURCE_BASEDIR=$(grep TEST_EXTRN_MDL_SOURCE_BASEDIR ${workspace}/ush/machine/${platform,,}.yaml | awk '{print $NF}')
+    echo "### Do we have locally staged data?  TEST_EXTRN_MDL_SOURCE_BASEDIR=${TEST_EXTRN_MDL_SOURCE_BASEDIR}"
+    ls -al $(dirname ${TEST_EXTRN_MDL_SOURCE_BASEDIR})/metprd
+    if [[ ! -d Indy-Severe-Weather ]] && [[ -d $(dirname ${TEST_EXTRN_MDL_SOURCE_BASEDIR})/metprd ]] ; then
+        (
+            set -x
+            mkdir -p Indy-Severe-Weather
+            #cp -rp /scratch1/NCEPDEV/nems/role.epic/UFS_SRW_data/develop/metprd Indy-Severe-Weather # Hera
+            cp -rp $(dirname ${TEST_EXTRN_MDL_SOURCE_BASEDIR})/metprd Indy-Severe-Weather/.
+            ls -al Indy-Severe-Weather/.
+            # If we copied local data, don't let the script fetch a new .tgz ... it takes too long.
+            [[ -d Indy-Severe-Weather/metprd/point_stat ]] && [[ ! -f Indy-Severe-Weather.tgz ]] && touch Indy-Severe-Weather.tgz
+            ls -al Indy-Severe-Weather/metprd/point_stat
+        )
+    fi
+    [[ ! -f Indy-Severe-Weather.tgz ]] && echo "wget https://noaa-ufs-srw-pds.s3.amazonaws.com/sample_cases/release-public-v2.1.0/Indy-Severe-Weather.tgz"
+    [[ ! -d Indy-Severe-Weather ]] && tar xvfz Indy-Severe-Weather.tgz
+    ls -al Indy-Severe-Weather/metprd
+}
+
+function SRW_skill_score() {
+    # Skill score index is computed over several terms that are defined in parm/metplus/STATAnalysisConfig_skill_score. 
+    # It is computed by aggregating the output from earlier runs of the Point-Stat and/or Grid-Stat tools over one or more cases.
+    # In this example, skill score index is a weighted average of 4 skill scores of RMSE statistics for wind speed, dew point temperature, 
+    # temperature, and pressure at lowest level in the atmosphere over 6 hour lead time.
+    #
+    local we2e_test_name="grid_SUBCONUS_Ind_3km_ics_FV3GFS_lbcs_FV3GFS_suite_WoFS_v0"
+    # Steps:
+    #   1. Build SRW app
+    #   2. run the specific WE2E test case, it generates *.stat files
+    #   3. copy the Metprd files into a workspace sub-folder (from local filesystem, or wget/untar the remote tarball)
+    #   4. copy WE2E's *.stat files into the same Metprd sub-folder
+    #   5. load modules
+    #   6. run 'stat_analysis'
+    #   7. extract the skill-score value, and see if it is within acceptable range
+
+    [[ -n ${workspace} ]] || workspace=${PWD}
+    [[ -n ${platform} ]] || platform=${SRW_PLATFORM,,}
+    [[ -n ${compiler} ]] || compiler=${SRW_COMPILER,,}
+
+    # Test directories
+    local we2e_experiment_base_dir="${workspace}/expt_dirs"
+    local we2e_test_dir="${workspace}/tests/WE2E"
+
+    [[ -f skill-score.out ]] && rm skill-score.out
+    cp ${we2e_experiment_base_dir}/${we2e_test_name}/2019061500/metprd/PointStat/*.stat ${workspace}/Indy-Severe-Weather/metprd/point_stat/
+
+    # setup the workflow environment ...
+    source etc/lmod-setup.sh ${platform,,}
+    module use ${PWD}/modulefiles
+    module load build_${platform,,}_${compiler}
+    module load wflow_${platform,,}
+
+    # load met and metplus
+    module use ${PWD}/modulefiles/tasks/${platform,,}
+    module load run_vx.local 
+    
+    # run skill-score check
+    stat_analysis -config parm/metplus/STATAnalysisConfig_skill_score -lookin ${workspace}/Indy-Severe-Weather/metprd/point_stat -v 2 -out skill-score.out
+
+    # check skill-score.out
+    cat skill-score.out
+    
+    # print skill-score (SS_INDEX) and check if it is significantly smaller than 1.0
+    # A value greater than 1.0 indicates that the forecast model outperforms the reference, 
+    # while a value less than 1.0 indicates that the reference outperforms the forecast.
+    tmp_string=$( tail -2 skill-score.out | head -1 )
+    SS_INDEX=$(echo $tmp_string | awk -F " " '{print $NF}')
+    echo "SRW Skill Score: ${SS_INDEX}"
+    if [[ ${SS_INDEX} < "0.700" ]]; then
+        echo "WARNING! Your SRW Skill Score is very low, way smaller than 1.00!"
+        return 1
+    else
+        echo "Congrats! Your SRW Skill Score is okay!"
+    fi
+}
+
 #[[ ${SRW_DEBUG} == true ]] && ( set | grep "()" | grep "^SRW_" )

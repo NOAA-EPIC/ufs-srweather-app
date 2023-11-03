@@ -104,7 +104,7 @@ function SRW_activate_workflow() {
     [[ ${SRW_PLATFORM} =~ hera ]] && module load build_${SRW_PLATFORM}_${SRW_COMPILER}
     module load wflow_${SRW_PLATFORM}
     rc=$?
-    conda activate workflow_tools
+    [[ false = $1 ]] || conda activate workflow_tools
     module list
     set +x
     return $rc
@@ -295,10 +295,11 @@ function SRW_skill_score() {
     cp ${we2e_experiment_base_dir}/${we2e_test_name}/2019061500/metprd/PointStat/*.stat ${workspace}/Indy-Severe-Weather/metprd/point_stat/
 
     # setup the workflow environment ...
-    source etc/lmod-setup.sh ${platform,,}
-    module use ${PWD}/modulefiles
-    module load build_${platform,,}_${compiler}
-    module load wflow_${platform,,}
+    SRW_activate_workflow false
+    #source etc/lmod-setup.sh ${platform,,}
+    #module use ${PWD}/modulefiles
+    #module load build_${platform,,}_${compiler}
+    #module load wflow_${platform,,}
 
     # load met and metplus
     module use ${PWD}/modulefiles/tasks/${platform,,}

@@ -172,7 +172,7 @@ pipeline {
                         steps {
                             dir ("${env.SRW_PLATFORM}") {
                             echo "Running simple workflow script task tests on ${env.SRW_PLATFORM} (using ${env.WORKSPACE}/${env.SRW_PLATFORM})"
-                            sh 'bash --login "${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/wrapper_srw_ftest.sh"'
+                            sh 'bash --login "echo TASK_DEPTH=1 ${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/wrapper_srw_ftest.sh"'
                             }
                         }
                     }

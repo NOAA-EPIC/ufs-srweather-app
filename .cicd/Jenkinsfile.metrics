@@ -135,7 +135,7 @@ pipeline {
                             echo "Initializing SRW (${env.SRW_COMPILER}) build environment on ${env.SRW_PLATFORM} (using ${env.WORKSPACE}/${env.SRW_PLATFORM})"
                             cleanWs()
                             checkout scm
-                            sh '"${WORKSPACE}/${SRW_PLATFORM}/manage_externals/checkout_externals"'
+                            sh '"time -p ${WORKSPACE}/${SRW_PLATFORM}/manage_externals/checkout_externals"'
                             }
                         }
                     }
@@ -145,7 +145,7 @@ pipeline {
                         steps {
                             dir ("${env.SRW_PLATFORM}") {
                             echo "Building SRW (${env.SRW_COMPILER}) on ${env.SRW_PLATFORM} (using ${env.WORKSPACE}/${env.SRW_PLATFORM})"
-                            sh 'bash --login "${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/srw_build.sh"'
+                            sh 'bash --login "time -p ${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/srw_build.sh"'
                             }
                         }
 
@@ -162,17 +162,20 @@ pipeline {
                         steps {
                             dir ("${env.SRW_PLATFORM}") {
                             echo "Running unittest on retrieve_data.py"
-                            sh 'bash --login "${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/srw_unittest.sh"'
+                            sh 'bash --login "time -p ${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/srw_unittest.sh"'
                             }
                         }
                     }
                     
                     // Try a few Workflow Task scripts to make sure E2E tests can be launched in a follow-on 'Test' stage
                     stage('Functional WorkflowTaskTests') {
+                        environment {
+                            TASK_DEPTH = "1"
+                        }
                         steps {
                             dir ("${env.SRW_PLATFORM}") {
                             echo "Running simple workflow script task tests on ${env.SRW_PLATFORM} (using ${env.WORKSPACE}/${env.SRW_PLATFORM})"
-                            sh 'bash --login "echo TASK_DEPTH=1 ${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/wrapper_srw_ftest.sh"'
+                            sh 'bash --login "time -p ${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/wrapper_srw_ftest.sh"'
                             }
                         }
                     }
@@ -201,7 +204,7 @@ pipeline {
                                     }
                                 }
 
-                                sh "SRW_WE2E_COMPREHENSIVE_TESTS=${run_we2e_comprehensive_tests}" + ' bash --login "echo ${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/srw_test.sh"'
+                                sh "SRW_WE2E_COMPREHENSIVE_TESTS=${run_we2e_comprehensive_tests}" + ' bash --login "time -p ${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/srw_test.sh"'
                             }
                             }
                         }

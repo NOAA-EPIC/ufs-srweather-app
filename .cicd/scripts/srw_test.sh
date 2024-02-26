@@ -40,7 +40,7 @@ fi
 cd ${we2e_test_dir}
 # Progress file
 progress_file="${workspace}/we2e_test_results-${platform}-${SRW_COMPILER}.txt"
-./setup_WE2E_tests.sh ${platform} ${SRW_PROJECT} ${SRW_COMPILER} ${test_type} \
+/usr/bin/time -p -o ${WORKSPACE}/${SRW_PLATFORM}-time-srw_test.txt ./setup_WE2E_tests.sh ${platform} ${SRW_PROJECT} ${SRW_COMPILER} ${test_type} \
     --expt_basedir=${we2e_experiment_base_dir} \
     --opsroot=${nco_dir} | tee ${progress_file}
 

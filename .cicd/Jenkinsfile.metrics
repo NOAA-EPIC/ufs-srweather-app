@@ -135,7 +135,7 @@ pipeline {
                             echo "Initializing SRW (${env.SRW_COMPILER}) build environment on ${env.SRW_PLATFORM} (using ${env.WORKSPACE}/${env.SRW_PLATFORM})"
                             cleanWs()
                             checkout scm
-                            sh 'bash --login "${WORKSPACE}/${SRW_PLATFORM}/manage_externals/checkout_externals"'
+                            sh '"${WORKSPACE}/${SRW_PLATFORM}/manage_externals/checkout_externals"'
                             }
                         }
                     }

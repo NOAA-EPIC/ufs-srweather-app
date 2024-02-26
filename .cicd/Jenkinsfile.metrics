@@ -145,7 +145,7 @@ pipeline {
                         steps {
                             dir ("${env.SRW_PLATFORM}") {
                             echo "Building SRW (${env.SRW_COMPILER}) on ${env.SRW_PLATFORM} (using ${env.WORKSPACE}/${env.SRW_PLATFORM})"
-                            sh 'bash --login "/usr/bin/time -p -o time-srw_build.txt ${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/srw_build.sh"'
+                            sh 'bash --login "${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/srw_build.sh"'
                             }
                         }
 

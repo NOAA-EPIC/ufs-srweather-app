@@ -30,7 +30,7 @@ function disk_usage() {
     local directory=${1:-${PWD}}
     local depth=${2:-1}
     local size=${3:-k}
-    echo "Disk usage: ${JOB_NAME}/${SRW_PLATFORM}/$(basename $directory)"
+    echo "Disk usage: ${JOB_NAME:-ci}/${SRW_PLATFORM}/$(basename $directory)"
     (
     cd $directory || exit 1
     echo "Platform,Build,Owner,Group,Inodes,${size:-k}bytes,Access Time,Filename"

@@ -136,7 +136,6 @@ pipeline {
                             cleanWs()
                             checkout scm
                             sh '"${WORKSPACE}/${SRW_PLATFORM}/manage_externals/checkout_externals"'
-                            sh 'bash --login "${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/disk_usage.sh > ${WORKSPACE}/${SRW_PLATFORM}-disk-usage-init.txt"'
                             }
                         }
                     }
@@ -145,9 +144,10 @@ pipeline {
                     stage('Build') {
                         steps {
                             dir ("${env.SRW_PLATFORM}") {
+                            sh 'bash --login "${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/disk_usage.sh"'
                             echo "Building SRW (${env.SRW_COMPILER}) on ${env.SRW_PLATFORM} (using ${env.WORKSPACE}/${env.SRW_PLATFORM})"
                             sh 'bash --login "${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/srw_build.sh"'
-                            sh 'bash --login "${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/disk_usage.sh > ${WORKSPACE}/${SRW_PLATFORM}-disk-usage-build.txt"'
+                            sh 'bash --login "${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/disk_usage.sh > ${WORKSPACE}/${SRW_PLATFORM}-disk-usage-build.csv"'
                             }
                         }
 
@@ -208,7 +208,7 @@ pipeline {
 
                                 sh "SRW_WE2E_COMPREHENSIVE_TESTS=${run_we2e_comprehensive_tests}" + ' bash --login "${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/srw_test.sh"'
                             }
-                            sh 'bash --login "${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/disk_usage.sh > ${WORKSPACE}/${SRW_PLATFORM}-disk-usage-test.txt"'
+                            sh 'bash --login "${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/disk_usage.sh > ${WORKSPACE}/${SRW_PLATFORM}-disk-usage-test.csv"'
                             }
                         }
 

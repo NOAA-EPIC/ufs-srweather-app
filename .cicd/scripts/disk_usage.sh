@@ -2,13 +2,34 @@
 
 # Output a CSV report of disk usage on subdirs of some path
 # Usage: 
-#    [JOB_NAME=<ci_job>] [BUILD_NUMBER=<n>] [COMPILER_CHOICE=<intel>] [SRW_PLATFORM=<machine>] disk_usage [ depth [ size ] ]
+#    [JOB_NAME=<ci_job>] [BUILD_NUMBER=<n>] [COMPILER_CHOICE=<intel>] [SRW_PLATFORM=<machine>] disk_usage path depth size outfile.csv
+#
+# args:
+#    directory=$1
+#    depth=$2
+#    size=$3
+#    outfile=$4
+
+[[ -n ${WORKSPACE} ]] || WORKSPACE=$(pwd)
+[[ -n ${SRW_PLATFORM} ]] || SRW_PLATFORM=$(hostname -s 2>/dev/null) || SRW_PLATFORM=$(hostname 2>/dev/null)
+
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" > /dev/null 2>&1 && pwd)"
+
+# Get repository root from Jenkins WORKSPACE variable if set, otherwise, set
+# relative to script directory.
+declare workspace
+if [[ -n "${WORKSPACE}/${SRW_PLATFORM}" ]]; then
+    workspace="${WORKSPACE}/${SRW_PLATFORM}"
+else
+    workspace="$(cd -- "${script_dir}/../.." && pwd)"
+fi
+
+outfile="${4:-${workspace}-disk-usage.csv}"
 
 function disk_usage() {
     local directory=${1:-${PWD}}
     local depth=${2:-1}
     local size=${3:-k}
-    [[ -n ${SRW_PLATFORM} ]] || SRW_PLATFORM=$(hostname -s 2>/dev/null) || SRW_PLATFORM=$(hostname 2>/dev/null)
     echo "Disk usage: ${JOB_NAME}/${SRW_PLATFORM}/$(basename $directory)"
     (
     cd $directory || exit 1
@@ -22,4 +43,4 @@ function disk_usage() {
     echo ""
 }
 
-disk_usage $1 $2 $3
+disk_usage $1 $2 $3 | tee ${outfile}

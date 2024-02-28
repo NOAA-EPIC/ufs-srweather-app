@@ -34,7 +34,7 @@ nco_dir="${workspace}/nco_dirs"
 if "${SRW_WE2E_COMPREHENSIVE_TESTS}"; then
     test_type="comprehensive"
 else
-    test_type="coverage"
+    test_type=${SRW_WE2E_SINGLE_TEST:-"coverage"}
 fi
 
 cd ${we2e_test_dir}

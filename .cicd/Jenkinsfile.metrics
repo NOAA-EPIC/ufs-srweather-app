@@ -218,7 +218,7 @@ pipeline {
                                 sh 'rm -f "${WORKSPACE}/${SRW_PLATFORM}/we2e_test_results-${SRW_PLATFORM}-${SRW_COMPILER}.txt" "${WORKSPACE}/${SRW_PLATFORM}/we2e_test_logs-${SRW_PLATFORM}-${SRW_COMPILER}.tgz"'
                                 sh 'touch "${WORKSPACE}/${SRW_PLATFORM}/we2e_test_results-${SRW_PLATFORM}-${SRW_COMPILER}.txt" "${WORKSPACE}/${SRW_PLATFORM}/we2e_test_logs-${SRW_PLATFORM}-${SRW_COMPILER}.tgz"'
                                 // Run specified tests, or 'none'
-                                sh "[[ ${single_test} != none ]] && SRW_WE2E_COMPREHENSIVE_TESTS=${run_we2e_comprehensive_tests} SRW_WE2E_SINGLE_TEST=${single_test}" + ' bash --login "${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/srw_test.sh"'
+                                sh "[[ ${single_test} = none ]] && echo test=${single_test} || SRW_WE2E_COMPREHENSIVE_TESTS=${run_we2e_comprehensive_tests} SRW_WE2E_SINGLE_TEST=${single_test}" + ' bash --login "${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/srw_test.sh"'
                                 // Archive the test log files
                                 sh "[[ ${single_test} != none ]] && [[ -d ${SRW_WE2E_EXPERIMENT_BASE_DIR} ]] && cd ${SRW_WE2E_EXPERIMENT_BASE_DIR} && tar --create --gzip --verbose --dereference --file ${WORKSPACE}/${SRW_PLATFORM}/we2e_test_logs-${SRW_PLATFORM}-${SRW_COMPILER}.tgz */log.generate_FV3LAM_wflow */log/* ${WORKSPACE}/${SRW_PLATFORM}/tests/WE2E/WE2E_tests_*yaml WE2E_summary*txt ${WORKSPACE}/${SRW_PLATFORM}/tests/WE2E/log.* || echo logs=${single_test}"
                                 // Remove the data sets from the experiments directory to conserve disk space

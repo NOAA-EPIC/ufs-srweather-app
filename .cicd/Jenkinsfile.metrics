@@ -18,7 +18,7 @@ pipeline {
         // Allow job runner to filter based on compiler
         choice(name: 'SRW_COMPILER_FILTER', choices: ['all', 'gnu', 'intel'], description: 'Specify the compiler(s) to use to build')
         // WE2E Tests ?
-        choice(name: 'SRW_WE2E_SINGLE_TEST', choices: ['none', 'grid_SUBCONUS_Ind_3km_ics_FV3GFS_lbcs_FV3GFS_suite_WoFS_v0'], description: 'Specify the WE2E test to use')
+        choice(name: 'SRW_WE2E_SINGLE_TEST', choices: ['none', 'coverage', 'skill-score', 'grid_SUBCONUS_Ind_3km_ics_FV3GFS_lbcs_FV3GFS_suite_WoFS_v0'], description: 'Specify the WE2E test to use')
         booleanParam name: 'SRW_WE2E_COMPREHENSIVE_TESTS', defaultValue: false, description: 'Whether to execute the comprehensive end-to-end tests'
     }
 

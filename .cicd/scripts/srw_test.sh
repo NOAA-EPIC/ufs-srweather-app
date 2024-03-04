@@ -39,6 +39,9 @@ if "${SRW_WE2E_COMPREHENSIVE_TESTS}"; then
     test_type="comprehensive"
 else
     test_type=${SRW_WE2E_SINGLE_TEST:-"coverage"}
+    if [[ "${SRW_WE2E_SINGLE_TEST}" = skill-score ]]; then
+        test_type="grid_SUBCONUS_Ind_3km_ics_FV3GFS_lbcs_FV3GFS_suite_WoFS_v0"
+    fi
 fi
 
 cd ${we2e_test_dir}

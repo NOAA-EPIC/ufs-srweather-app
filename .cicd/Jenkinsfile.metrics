@@ -210,14 +210,10 @@ pipeline {
                                     }
                                 }
 
-                                // Clean any stale logs ...
-                                //sh 'rm -f ${WORKSPACE}/${SRW_PLATFORM}/tests/WE2E/log.*'
-                                //sh '[[ -d "${SRW_WE2E_EXPERIMENT_BASE_DIR}" ]] && cd "${SRW_WE2E_EXPERIMENT_BASE_DIR}" && rm -f */log.generate_FV3LAM_wflow */log/* WE2E_summary*txt || echo "clean"'
-
                                 sh "SRW_WE2E_COMPREHENSIVE_TESTS=${run_we2e_comprehensive_tests} SRW_WE2E_SINGLE_TEST=${single_test}" + ' bash --login "${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/srw_test.sh"'
 
                                 // Archive the test log files
-                                //sh 'cat /dev/null > "${WORKSPACE}/${SRW_PLATFORM}/we2e_test_logs-${SRW_PLATFORM}-${SRW_COMPILER}.tgz"'
+                                sh "[[ -d ${SRW_WE2E_EXPERIMENT_BASE_DIR} ]] && cd ${SRW_WE2E_EXPERIMENT_BASE_DIR} && tar --create --gzip --verbose --dereference --file ${WORKSPACE}/${SRW_PLATFORM}/we2e_test_logs-${SRW_PLATFORM}-${SRW_COMPILER}.tgz */log.generate_FV3LAM_wflow */log/* ${WORKSPACE}/${SRW_PLATFORM}/tests/WE2E/WE2E_tests_*yaml WE2E_summary*txt ${WORKSPACE}/${SRW_PLATFORM}/tests/WE2E/log.* || cat /dev/null > ${WORKSPACE}/${SRW_PLATFORM}/we2e_test_logs-${SRW_PLATFORM}-${SRW_COMPILER}.tgz"
                              }
                             sh 'bash --login "${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/disk_usage.sh"'
                             }
@@ -225,7 +221,6 @@ pipeline {
 
                         post {
                             success {
-                                sh "[[ -d ${SRW_WE2E_EXPERIMENT_BASE_DIR} ]] && cd ${SRW_WE2E_EXPERIMENT_BASE_DIR} && tar --create --gzip --verbose --dereference --file ${WORKSPACE}/${SRW_PLATFORM}/we2e_test_logs-${SRW_PLATFORM}-${SRW_COMPILER}.tgz */log.generate_FV3LAM_wflow */log/* ${WORKSPACE}/${SRW_PLATFORM}/tests/WE2E/WE2E_tests_*yaml WE2E_summary*txt ${WORKSPACE}/${SRW_PLATFORM}/tests/WE2E/log.* || cat /dev/null > ${WORKSPACE}/${SRW_PLATFORM}/we2e_test_logs-${SRW_PLATFORM}-${SRW_COMPILER}.tgz"
                                 s3Upload consoleLogLevel: 'INFO', dontSetBuildResultOnFailure: false, dontWaitForConcurrentBuildCompletion: false, entries: [[bucket: 'noaa-epic-prod-jenkins-artifacts', excludedFile: '', flatten: false, gzipFiles: false, keepForever: false, managedArtifacts: true, noUploadOnFailure: false, selectedRegion: 'us-east-1', showDirectlyInBrowser: false, sourceFile: "${env.SRW_PLATFORM}/*_test_results-*-*.txt", storageClass: 'STANDARD', uploadFromSlave: false, useServerSideEncryption: false], [bucket: 'noaa-epic-prod-jenkins-artifacts', excludedFile: '', flatten: false, gzipFiles: false, keepForever: false, managedArtifacts: true, noUploadOnFailure: false, selectedRegion: 'us-east-1', showDirectlyInBrowser: false, sourceFile: "${env.SRW_PLATFORM}/we2e_test_logs-${env.SRW_PLATFORM}-${env.SRW_COMPILER}.tgz", storageClass: 'STANDARD', uploadFromSlave: false, useServerSideEncryption: false]], pluginFailureResultConstraint: 'FAILURE', profileName: 'main', userMetadata: []
                             }
                             always {

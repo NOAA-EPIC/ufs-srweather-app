@@ -30,6 +30,12 @@ we2e_experiment_base_dir="${workspace}/expt_dirs"
 we2e_test_dir="${workspace}/tests/WE2E"
 nco_dir="${workspace}/nco_dirs"
 
+# Clean any stale test results
+rm -f ${workspace}/tests/WE2E/log.*
+rm -f ${we2e_experiment_base_dir}/*/log.generate_FV3LAM_wflow ${we2e_experiment_base_dir}/*/log/* WE2E_summary*txt
+cat /dev/null > ${workspace}/we2e_test_results-${SRW_PLATFORM}-${SRW_COMPILER}.txt 
+cat /dev/null > ${workspace}/we2e_test_logs-${SRW_PLATFORM}-${SRW_COMPILER}.tgz
+
 # Run the end-to-end tests.
 if "${SRW_WE2E_COMPREHENSIVE_TESTS}"; then
     test_type="comprehensive"

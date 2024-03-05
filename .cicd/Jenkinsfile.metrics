@@ -134,7 +134,6 @@ pipeline {
                     stage('Initialize') {
                         steps {
                             dir ("${env.SRW_PLATFORM}") {
-                            currentBuild.description = "${env.SRW_PLATFORM}-${env.SRW_COMPILER}"
                             echo "${env.STAGE_NAME} SRW (${env.SRW_COMPILER}) build environment on ${env.SRW_PLATFORM} (using ${env.WORKSPACE}/${env.SRW_PLATFORM})"
                             cleanWs()
                             checkout scm

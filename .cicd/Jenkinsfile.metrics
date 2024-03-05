@@ -138,6 +138,8 @@ pipeline {
                             cleanWs()
                             checkout scm
                             sh '"${WORKSPACE}/${SRW_PLATFORM}/manage_externals/checkout_externals"'
+                            sh 'bash --login "${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/disk_usage.sh"'
+                            sh 'bash --login "/usr/bin/time -p -o ${WORKSPACE}/${SRW_PLATFORM}-time-init.txt ${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/disk_usage.sh"'
                             }
                         }
                     }

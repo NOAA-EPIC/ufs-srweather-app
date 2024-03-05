@@ -134,14 +134,17 @@ pipeline {
                     stage('Initialize') {
                         steps {
                             dir ("${env.SRW_PLATFORM}") {
+                            currentBuild.description = "${env.SRW_PLATFORM}-${env.SRW_COMPILER}"
                             echo "${env.STAGE_NAME} SRW (${env.SRW_COMPILER}) build environment on ${env.SRW_PLATFORM} (using ${env.WORKSPACE}/${env.SRW_PLATFORM})"
                             cleanWs()
                             checkout scm
                             sh '"${WORKSPACE}/${SRW_PLATFORM}/manage_externals/checkout_externals"'
+                            script {
+                                sh 'bash --login "time"'
+                                sh 'time'
+                                sh 'bash --login "ls -l /usr/bin/time ${WORKSPACE}/${SRW_PLATFORM}-time-init.txt ${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/disk_usage.sh"'
+                                }
                             sh 'bash --login "${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/disk_usage.sh"'
-                            sh 'bash --login "echo ${PATH}"'
-                            sh 'bash --login "which time"'
-                            sh 'bash --login "ls -l /usr/bin/time ${WORKSPACE}/${SRW_PLATFORM}-time-init.txt ${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/disk_usage.sh"'
                             }
                         }
                     }
@@ -218,7 +221,7 @@ pipeline {
 
                                 // Archive the test log files
                                 sh "[[ -d ${SRW_WE2E_EXPERIMENT_BASE_DIR} ]] && cd ${SRW_WE2E_EXPERIMENT_BASE_DIR} && tar --create --gzip --verbose --dereference --file ${WORKSPACE}/${SRW_PLATFORM}/we2e_test_logs-${SRW_PLATFORM}-${SRW_COMPILER}.tgz */log.generate_FV3LAM_wflow */log/* ${WORKSPACE}/${SRW_PLATFORM}/tests/WE2E/WE2E_tests_*yaml WE2E_summary*txt ${WORKSPACE}/${SRW_PLATFORM}/tests/WE2E/log.* || cat /dev/null > ${WORKSPACE}/${SRW_PLATFORM}/we2e_test_logs-${SRW_PLATFORM}-${SRW_COMPILER}.tgz"
-                             }
+                                }
                             sh 'bash --login "${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/disk_usage.sh"'
                             }
                         }

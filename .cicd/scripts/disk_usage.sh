@@ -2,7 +2,7 @@
 
 # Output a CSV report of disk usage on subdirs of some path
 # Usage: 
-#    [JOB_NAME=<ci_job>] [BUILD_NUMBER=<n>] [COMPILER_CHOICE=<intel>] [SRW_PLATFORM=<machine>] disk_usage path depth size outfile.csv
+#    [JOB_NAME=<ci_job>] [BUILD_NUMBER=<n>] [SRW_COMPILER=<intel>] [SRW_PLATFORM=<machine>] disk_usage path depth size outfile.csv
 #
 # args:
 #    directory=$1
@@ -37,7 +37,7 @@ function disk_usage() {
     du -Px -d ${depth:-1} --inode --exclude='./workspace' | \
         while read line ; do
             arr=($line); inode=${arr[0]}; filename=${arr[1]};
-            echo "${SRW_PLATFORM}-${COMPILER_CHOICE:-compiler},${JOB_NAME:-ci}/${BUILD_NUMBER:-0},$(stat -c '%U,%G' $filename),${inode:-0},$(du -Px -s -${size:-k} --time $filename)" | tr '\t' ',' ;
+            echo "${SRW_PLATFORM}-${SRW_COMPILER:-compiler},${JOB_NAME:-ci}/${BUILD_NUMBER:-0},$(stat -c '%U,%G' $filename),${inode:-0},$(du -Px -s -${size:-k} --time $filename)" | tr '\t' ',' ;
         done | sort -t, -k5 -n #-r
     )
     echo ""

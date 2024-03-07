@@ -27,7 +27,7 @@ fi
 # Build and install
 cd ${workspace}
 set +e
-/usr/bin/time -p -o ${WORKSPACE}/${SRW_PLATFORM}-time-srw_init.txt ./manage_externals/checkout_externals
+/usr/bin/time -p -o ${WORKSPACE}/${SRW_PLATFORM}-${SRW_COMPIILER}-time-srw_init.txt ./manage_externals/checkout_externals
 init_exit=$?
 set -e
 cd -

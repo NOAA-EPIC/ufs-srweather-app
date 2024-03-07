@@ -138,7 +138,7 @@ pipeline {
                             cleanWs()
                             checkout scm
                             sh '"${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/srw_init.sh"'
-                            sh 'bash --login "env | grep = | sort > ${WORKSPACE}/${SRW_PLATFORM}-${SRW_COMPILER}-env.txt"'
+                            sh 'bash --login "env | grep = | sort | tee ${WORKSPACE}/${SRW_PLATFORM}/${SRW_PLATFORM}-${SRW_COMPILER}-env.txt"'
                             sh 'bash --login "${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/disk_usage.sh"'
                             }
                         }

@@ -12,6 +12,7 @@
 
 [[ -n ${WORKSPACE} ]] || WORKSPACE=$(pwd)
 [[ -n ${SRW_PLATFORM} ]] || SRW_PLATFORM=$(hostname -s 2>/dev/null) || SRW_PLATFORM=$(hostname 2>/dev/null)
+[[ -n ${SRW_COMPILER} ]] || SRW_COMPILER=compiler
 
 script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" > /dev/null 2>&1 && pwd)"
 
@@ -24,7 +25,7 @@ else
     workspace="$(cd -- "${script_dir}/../.." && pwd)"
 fi
 
-outfile="${4:-${workspace}-disk-usage.csv}"
+outfile="${4:-${workspace}-${SRW_COMPILER}-disk-usage.csv}"
 
 function disk_usage() {
     local directory=${1:-${PWD}}

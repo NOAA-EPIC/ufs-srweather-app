@@ -29,6 +29,7 @@ cd ${workspace}
 set +e
 /usr/bin/time -p -o ${WORKSPACE}/${SRW_PLATFORM}-${SRW_COMPILER}-time-srw_init.txt ./manage_externals/checkout_externals
 init_exit=$?
+env | grep = | sort > ${WORKSPACE}/${SRW_PLATFORM}-${SRW_COMPILER}-env.txt
 set -e
 cd -
 

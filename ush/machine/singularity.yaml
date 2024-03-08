@@ -2,28 +2,27 @@ platform:
   WORKFLOW_MANAGER: rocoto
   NCORES_PER_NODE: 36
   SCHED: slurm
-  DOMAIN_PREGEN_BASEDIR: /home/ubuntu/community_test
-  PARTITION_DEFAULT: null
-  QUEUE_DEFAULT: batch
-  PARTITION_FCST: null
-  QUEUE_FCST: batch
-  QUEUE_HPSS: batch
+  TEST_CCPA_OBS_DIR: /contrib/EPIC/UFS_SRW_data/v2p2/obs_data/ccpa/proc
+  TEST_MRMS_OBS_DIR: /contrib/EPIC/UFS_SRW_data/v2p2/obs_data/mrms/proc
+  TEST_NDAS_OBS_DIR: /contrib/EPIC/UFS_SRW_data/v2p2/obs_data/ndas/proc
+  DOMAIN_PREGEN_BASEDIR: /contrib/EPIC/UFS_SRW_data/v2p2/FV3LAM_pregen
+  REMOVE_MEMORY: True
   RUN_CMD_FCST: srun --mpi=pmi2 -n ${PE_MEMBER01}
-  RUN_CMD_POST: srun --mpi=pmi2 -n $nprocs
+  RUN_CMD_POST: srun --mpi=pmi2 -n $nprocs 
   RUN_CMD_SERIAL: time
-  RUN_CMD_UTILS: srun --mpi=pmi2 -n $nprocs
+  RUN_CMD_UTILS: srun --mpi=pmi2 -n $nprocs 
   SCHED_NATIVE_CMD: --export=NONE
   PRE_TASK_CMDS: '{ ulimit -s unlimited; ulimit -a; }'
-  FIXaer: /scratch/fix/fix_aer
-  FIXgsm: /scratch/fix/fix_am
-  FIXlut: /scratch/fix/fix_lut
-  FIXorg: /scratch/fix/fix_orog
-  FIXsfc: /scratch/fix/fix_sfc_climo
-  FIXshp: /scratch/NaturalEarth
+  FIXaer: /lustre/data/fix/fix_aer
+  FIXgsm: /lustre/data/fix/fix_am
+  FIXlut: /lustre/data/fix/fix_lut
+  FIXorg: /lustre/data/fix/fix_orog
+  FIXsfc: /lustre/data/fix/fix_sfc_climo
+  FIXshp: /lustre/data/NaturalEarth
   EXTRN_MDL_DATA_STORES: aws nomads
 data:
   ics_lbcs:
     FV3GFS:
-      nemsio: /scratch/input_model_data/FV3GFS/nemsio/${yyyymmdd}${hh}
-      grib2: /scratch/input_model_data/FV3GFS/grib2/${yyyymmdd}${hh}
-      netcdf: /scratch/input_model_data/FV3GFS/netcdf/${yyyymmdd}${hh}
+      nemsio: /lustre/data/input_model_data/FV3GFS/nemsio/${yyyymmdd}${hh}
+      grib2: /lustre/data/input_model_data/FV3GFS/grib2/${yyyymmdd}${hh}
+      netcdf: /lustre/data/input_model_data/FV3GFS/netcdf/${yyyymmdd}${hh}

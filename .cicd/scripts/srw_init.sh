@@ -27,7 +27,7 @@ fi
 # Build and install
 cd ${workspace}
 set +e
-/usr/bin/time -p -o ${WORKSPACE}/${SRW_PLATFORM}-${SRW_COMPILER}-time-srw_init.txt ./manage_externals/checkout_externals
+/usr/bin/time -p -f " real %e\n user %U\n sys %S\n cpu %P\n memMax %Mk\n" -o ${WORKSPACE}/${SRW_PLATFORM}-${SRW_COMPILER}-time-srw_init.txt ./manage_externals/checkout_externals
 init_exit=$?
 env | grep = | sort > ${WORKSPACE}/${SRW_PLATFORM}-${SRW_COMPILER}-env.txt
 set -e

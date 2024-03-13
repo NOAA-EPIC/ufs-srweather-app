@@ -27,7 +27,7 @@ fi
 # Build and install
 cd ${workspace}/tests
 set +e
-/usr/bin/time -p -o ${WORKSPACE}/${SRW_PLATFORM}-${SRW_COMPILER}-time-srw_build.txt ./build.sh ${platform} ${SRW_COMPILER}
+/usr/bin/time -p -f " real %e\n user %U\n sys %S\n cpu %P\n memMax %Mk\n" -o ${WORKSPACE}/${SRW_PLATFORM}-${SRW_COMPILER}-time-srw_build.txt ./build.sh ${platform} ${SRW_COMPILER}
 build_exit=$?
 set -e
 cd -

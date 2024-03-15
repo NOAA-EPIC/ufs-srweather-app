@@ -47,7 +47,8 @@ fi
 cd ${we2e_test_dir}
 # Progress file
 progress_file="${workspace}/we2e_test_results-${platform}-${SRW_COMPILER}.txt"
-/usr/bin/time -p -f " real %e\n user %U\n sys %S\n cpu %P\n memMax %Mk\n" -o ${WORKSPACE}/${SRW_PLATFORM}-${SRW_COMPILER}-time-srw_test.txt ./setup_WE2E_tests.sh ${platform} ${SRW_PROJECT} ${SRW_COMPILER} ${test_type} \
+/usr/bin/time -p -f '{\n  "cpu": "%P"\n, "memMax": "%M", "mem": {"text": "%X", "data": "%D", "swaps": "%W", "context": "%c", "waits": "%w"}\n, "pagefaults": {"major": "%F", "minor": "%R"}\n, "filesystem": {"inputs": "%I", "outputs": "%O"}\n, "time": {"real": "%e", "user": "%U", "sys": "%S"}\n}' -o ${WORKSPACE}/${SRW_PLATFORM}-${SRW_COMPILER}-time-srw_test.json \
+    ./setup_WE2E_tests.sh ${platform} ${SRW_PROJECT} ${SRW_COMPILER} ${test_type} \
     --expt_basedir=${we2e_experiment_base_dir} \
     --opsroot=${nco_dir} | tee ${progress_file}
 

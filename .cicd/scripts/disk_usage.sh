@@ -25,7 +25,8 @@ else
     workspace="$(cd -- "${script_dir}/../.." && pwd)"
 fi
 
-outfile="${4:-${workspace}-${SRW_COMPILER}-disk-usage.csv}"
+echo "STAGE_NAME=${STAGE_NAME}" # from pipeline
+outfile="${4:-${workspace}-${SRW_COMPILER}-disk-usage${STAGE_NAME}.csv}"
 
 function disk_usage() {
     local directory=${1:-${PWD}}

@@ -140,7 +140,7 @@ pipeline {
                             cleanWs()
                             checkout scm
                             sh '"${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/srw_init.sh"'
-                            sh 'bash --login "${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/disk_usage.sh"'
+                            sh "STAGE_NAME=${env.STAGE_NAME} " + 'bash --login "${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/disk_usage.sh"'
                             }
                         }
                         post {
@@ -157,7 +157,7 @@ pipeline {
                             dir ("${env.SRW_PLATFORM}") {
                             echo "${env.STAGE_NAME} SRW (${env.SRW_COMPILER}) on ${env.SRW_PLATFORM} (using ${env.WORKSPACE}/${env.SRW_PLATFORM})"
                             sh 'bash --login "${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/srw_build.sh"'
-                            sh 'bash --login "${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/disk_usage.sh"'
+                            sh "STAGE_NAME=${env.STAGE_NAME} " + 'bash --login "${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/disk_usage.sh"'
                             }
                         }
 
@@ -228,7 +228,7 @@ pipeline {
                                 // Archive the test log files
                                 sh "[[ -d ${SRW_WE2E_EXPERIMENT_BASE_DIR} ]] && cd ${SRW_WE2E_EXPERIMENT_BASE_DIR} && tar --create --gzip --verbose --dereference --file ${WORKSPACE}/${SRW_PLATFORM}/we2e_test_logs-${SRW_PLATFORM}-${SRW_COMPILER}.tgz */log.generate_FV3LAM_wflow */log/* ${WORKSPACE}/${SRW_PLATFORM}/tests/WE2E/WE2E_tests_*yaml WE2E_summary*txt ${WORKSPACE}/${SRW_PLATFORM}/tests/WE2E/log.* || cat /dev/null > ${WORKSPACE}/${SRW_PLATFORM}/we2e_test_logs-${SRW_PLATFORM}-${SRW_COMPILER}.tgz"
                                 }
-                                sh 'bash --login "${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/disk_usage.sh"'
+                                sh "STAGE_NAME=${env.STAGE_NAME} " + 'bash --login "${WORKSPACE}/${SRW_PLATFORM}/.cicd/scripts/disk_usage.sh"'
                             }
                         }
 

@@ -30,6 +30,7 @@ set +e
 /usr/bin/time -p -f '{\n  "cpu": "%P"\n, "memMax": "%M"\n, "mem": {"text": "%X", "data": "%D", "swaps": "%W", "context": "%c", "waits": "%w"}\n, "pagefaults": {"major": "%F", "minor": "%R"}\n, "filesystem": {"inputs": "%I", "outputs": "%O"}\n, "time": {"real": "%e", "user": "%U", "sys": "%S"}\n}' -o ${WORKSPACE}/${SRW_PLATFORM}-${SRW_COMPILER}-time-srw_init.json \
     ./manage_externals/checkout_externals
 init_exit=$?
+echo "STAGE_NAME=${STAGE_NAME}"
 env | grep = | sort > ${WORKSPACE}/${SRW_PLATFORM}-${SRW_COMPILER}-env.txt
 set -e
 cd -

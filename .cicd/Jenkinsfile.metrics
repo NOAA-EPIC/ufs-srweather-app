@@ -248,7 +248,7 @@ pipeline {
            stage('Metrics') {
             steps {
                 script {
-                    CI_BRANCH_NAME="$(basename ${env.JOB_URL})"
+                    CI_BRANCH_NAME=env.JOB_BASE_NAME.replace("%2F","%252F")
                     echo "Triggering job for branch ${CI_BRANCH_NAME}/${env.BUILD_NUMBER} ..."
                     build job: '/infrastructure/srw-stats', parameters: [
                         string(name: 'CI_JOB_NAME', value: "ufs-srweather-app/metrics"),

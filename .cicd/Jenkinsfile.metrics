@@ -245,12 +245,12 @@ pipeline {
                         }
                     }
 
-           stage('Metrics') {
+           stage("Metrics ${JOB_BASE_NAME}/${BUILD_NUMBER}") {
             steps {
                 script {
                     build job: '../infrastructure/srw-stats', parameters: [
-                        string(name: 'CI_JOB_NAME', value: 'ufs-srweather-app/metrics'),
-                        string(name: 'CI_BUILD_NUMBER', value: env.JOB_BASE_NAME/env.BUILD_NUMBER)
+                        string(name: 'CI_JOB_NAME', value: "ufs-srweather-app/metrics"),
+                        string(name: 'CI_BUILD_NUMBER', value: "${JOB_BASE_NAME}/${BUILD_NUMBER}")
                     ], wait: false
                 }
             }

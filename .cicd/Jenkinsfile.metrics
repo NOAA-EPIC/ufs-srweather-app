@@ -249,7 +249,7 @@ pipeline {
                             script {
                                 CI_BRANCH_NAME=env.JOB_BASE_NAME.replace("%2F","%252F")
                                 echo "Triggering job for branch ${CI_BRANCH_NAME}/${env.BUILD_NUMBER} ..."
-                                build job: '/infrastructure/srw-stats', parameters: [
+                                build job: '/ufs-srweather-app/ufs-srw-metrics', parameters: [
                                     string(name: 'CI_JOB_NAME', value: "ufs-srweather-app/metrics"),
                                     string(name: 'CI_BUILD_NUMBER', value: "${CI_BRANCH_NAME}/${env.BUILD_NUMBER}")
                                 ], wait: false

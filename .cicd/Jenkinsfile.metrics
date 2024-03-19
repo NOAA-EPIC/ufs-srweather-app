@@ -164,7 +164,6 @@ pipeline {
                         post {
                             success {
                                 sh 'cd "${WORKSPACE}/${SRW_PLATFORM}/${INSTALL_NAME}" && tar --create --gzip --verbose --file "${WORKSPACE}/${SRW_PLATFORM}/${BUILD_NAME}.tgz" *'
-                                sh 'cat /dev/null > "${WORKSPACE}/${SRW_PLATFORM}/${BUILD_NAME}.tgz"'
                                 s3Upload consoleLogLevel: 'INFO', dontSetBuildResultOnFailure: false, dontWaitForConcurrentBuildCompletion: false, entries: [[bucket: 'noaa-epic-prod-jenkins-artifacts', excludedFile: '', flatten: false, gzipFiles: false, keepForever: false, managedArtifacts: true, noUploadOnFailure: true, selectedRegion: 'us-east-1', showDirectlyInBrowser: false, sourceFile: "${env.SRW_PLATFORM}/${env.BUILD_NAME}.tgz", storageClass: 'STANDARD', uploadFromSlave: false, useServerSideEncryption: false], [bucket: 'noaa-epic-prod-jenkins-artifacts', excludedFile: '', flatten: false, gzipFiles: false, keepForever: false, managedArtifacts: true, noUploadOnFailure: true, selectedRegion: 'us-east-1', showDirectlyInBrowser: false, sourceFile: "${env.SRW_PLATFORM}/build_${env.SRW_COMPILER}/srw_build-${env.SRW_PLATFORM}-${env.SRW_COMPILER}.txt", storageClass: 'STANDARD', uploadFromSlave: false, useServerSideEncryption: false]], pluginFailureResultConstraint: 'FAILURE', profileName: 'main', userMetadata: []
                             }
                             always {
@@ -245,20 +244,19 @@ pipeline {
                         }
                     }
 
-           stage('Metrics') {
-            steps {
-                script {
-                    CI_BRANCH_NAME=env.JOB_BASE_NAME.replace("%2F","%252F")
-                    echo "Triggering job for branch ${CI_BRANCH_NAME}/${env.BUILD_NUMBER} ..."
-                    build job: '/infrastructure/srw-stats', parameters: [
-                        string(name: 'CI_JOB_NAME', value: "ufs-srweather-app/metrics"),
-                        string(name: 'CI_BUILD_NUMBER', value: "${CI_BRANCH_NAME}/${env.BUILD_NUMBER}")
-                    ], wait: false
+                    stage('Metrics') {
+                        steps {
+                            script {
+                                CI_BRANCH_NAME=env.JOB_BASE_NAME.replace("%2F","%252F")
+                                echo "Triggering job for branch ${CI_BRANCH_NAME}/${env.BUILD_NUMBER} ..."
+                                build job: '/infrastructure/srw-stats', parameters: [
+                                    string(name: 'CI_JOB_NAME', value: "ufs-srweather-app/metrics"),
+                                    string(name: 'CI_BUILD_NUMBER', value: "${CI_BRANCH_NAME}/${env.BUILD_NUMBER}")
+                                ], wait: false
+                            }
+                        }
+                    }
                 }
-            }
-        }
-
-              }
             }
         }
     }
